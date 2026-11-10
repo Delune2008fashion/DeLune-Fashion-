@@ -82,3 +82,9 @@ body{background:#FADDE7;color:#281923}.announcement,.brand-note{background:#F0BF
 /* Center the DeLune logo in the footer */
 .site-footer .footer-wordmark,.footer .footer-wordmark,.footer-brand,.site-footer .brand{display:flex!important;justify-content:center!important;align-items:center!important;width:100%;text-align:center!important;margin-left:auto!important;margin-right:auto!important}
 .site-footer .footer-wordmark .delune-logo,.footer .footer-wordmark .delune-logo,.footer-brand .delune-logo,.site-footer .brand .delune-logo{object-position:center!important;margin-left:auto!important;margin-right:auto!important}
+
+/* Side-by-side product ordering choices */
+.order-buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.order-buttons .whatsapp-button{flex:1 1 180px;text-align:center;display:inline-flex;align-items:center;justify-content:center}
+.order-buttons .whatsapp-order{background:#238b55;color:#fff}
+.order-buttons .messenger-button{background:#2876df;color:#fff}
