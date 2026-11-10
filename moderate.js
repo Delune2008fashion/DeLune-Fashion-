@@ -8,7 +8,7 @@ async function loadCategories(){
   categories=await DeLuneStore.categories();
   $("#pCategory").innerHTML=categories.map(c=>`<option value="${c.slug}">${c.parent_id?"↳ ":""}${c.name}</option>`).join("");
   const parent=$("#cParent");if(parent)parent.innerHTML=`<option value="">Top-level category</option>`+categories.filter(c=>!c.parent_id).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
-  $("#adminCategories").innerHTML=categories.map(c=>`<div class="admin-item"><div><strong>${c.name}</strong><small>${c.slug}</small></div><button class="admin-button secondary" data-delete-category="${c.id||c.slug}">Delete</button></div>`).join("");
+  $("#adminCategories").innerHTML=categories.map(c=>`<div class="admin-item"><div><strong>${c.name}</strong><small>${c.slug}${c.image_url?" · Cover image set":""}</small></div><div class="admin-actions"><button class="admin-button secondary" data-edit-category="${c.id}">Edit</button><button class="admin-button secondary" data-delete-category="${c.id||c.slug}">Delete</button></div></div>`).join("");
 }
 async function loadProducts(){
   const ps=await DeLuneStore.products({availableOnly:false});
@@ -58,18 +58,26 @@ $("#adminProducts").addEventListener("click",async e=>{
   }
   if(del&&confirm("Delete this product?")){const {error}=await db.from("products").delete().eq("id",del.dataset.delete);status("#productStatus",error?.message||"Product deleted.");await loadProducts()}
 });
+function resetCategoryForm(){ $("#categoryForm").reset();$("#cId").value="";$("#saveCategoryBtn").textContent="Add category"; }
+$("#resetCategory").addEventListener("click",resetCategoryForm);
 $("#categoryForm").addEventListener("submit",async e=>{
-  e.preventDefault();const name=$("#cName").value.trim(),slug=$("#cSlug").value.trim()||slugify(name);
+  e.preventDefault();const id=$("#cId").value,name=$("#cName").value.trim(),slug=$("#cSlug").value.trim()||slugify(name);
   try{
    const uploaded=await uploadSingleImage("#cImageFile");
-   const image_url=uploaded||$("#cImage").value.trim();
-   const {error}=await db.from("categories").insert({name,slug,parent_id:$("#cParent")?.value||null,image_url,sort_order:categories.length,is_visible:true});
-   status("#categoryStatus",error?.message||"Category added.");if(!error){e.target.reset();await loadCategories()}
-  }catch(err){status("#categoryStatus",err.message||"Could not upload category image.")}
+   const payload={name,slug,parent_id:$("#cParent")?.value||null,sort_order:categories.find(c=>c.id===id)?.sort_order??categories.length,is_visible:true};
+   const typedUrl=$("#cImage").value.trim();if(uploaded||typedUrl)payload.image_url=uploaded||typedUrl;
+   const result=id?await db.from("categories").update(payload).eq("id",id):await db.from("categories").insert({...payload,image_url:payload.image_url||null});
+   if(result.error)throw result.error;
+   status("#categoryStatus",id?"Category updated.":"Category added.");resetCategoryForm();await loadCategories();
+  }catch(err){status("#categoryStatus",err.message||"Could not save category or upload its image.")}
 });
 $("#adminCategories").addEventListener("click",async e=>{
-  const b=e.target.closest("[data-delete-category]");if(!b||!confirm("Delete this category? Products using it should be reassigned first."))return;
-  const {error}=await db.from("categories").delete().eq("id",b.dataset.deleteCategory);status("#categoryStatus",error?.message||"Category deleted.");await loadCategories();
+  const edit=e.target.closest("[data-edit-category]"),del=e.target.closest("[data-delete-category]");
+  if(edit){const c=categories.find(x=>String(x.id)===edit.dataset.editCategory);if(!c)return;
+   $("#cId").value=c.id;$("#cName").value=c.name;$("#cSlug").value=c.slug;$("#cParent").value=c.parent_id||"";$("#cImage").value=c.image_url||"";$("#saveCategoryBtn").textContent="Update category";window.scrollTo({top:$("#categoryForm").getBoundingClientRect().top+window.scrollY-90,behavior:"smooth"});return;
+  }
+  if(!del||!confirm("Delete this category? Products using it should be reassigned first."))return;
+  const {error}=await db.from("categories").delete().eq("id",del.dataset.deleteCategory);status("#categoryStatus",error?.message||"Category deleted.");await loadCategories();
 });
 $("#bannerForm").addEventListener("submit",async e=>{
  e.preventDefault();try{
