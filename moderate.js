@@ -18,10 +18,14 @@ async function refresh(){await Promise.all([loadCategories(),loadProducts()])}
 function reset(){ $("#productForm").reset();$("#productId").value="";$("#productFormTitle").textContent="Add a product";$("#pAvailable").checked=true; }
 async function uploadImages(files){
   const urls=[];for(const file of files){
-    const path=`${currentUser.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+    const path=`${currentUser.id}/${Date.now()}-${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
     const {error}=await db.storage.from("product-images").upload(path,file,{upsert:false,contentType:file.type});
     if(error)throw error;const {data}=db.storage.from("product-images").getPublicUrl(path);urls.push(data.publicUrl);
   }return urls;
+}
+async function uploadSingleImage(inputSelector){
+ const file=$(inputSelector)?.files?.[0];if(!file)return "";
+ const [url]=await uploadImages([file]);return url;
 }
 $("#loginForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!configured){status("#loginStatus","Supabase is not configured. Add the project URL and anon key in config.js.");return}
@@ -56,12 +60,24 @@ $("#adminProducts").addEventListener("click",async e=>{
 });
 $("#categoryForm").addEventListener("submit",async e=>{
   e.preventDefault();const name=$("#cName").value.trim(),slug=$("#cSlug").value.trim()||slugify(name);
-  const {error}=await db.from("categories").insert({name,slug,parent_id:$("#cParent")?.value||null,image_url:$("#cImage").value.trim(),sort_order:categories.length,is_visible:true});
-  status("#categoryStatus",error?.message||"Category added.");if(!error){e.target.reset();await loadCategories()}
+  try{
+   const uploaded=await uploadSingleImage("#cImageFile");
+   const image_url=uploaded||$("#cImage").value.trim();
+   const {error}=await db.from("categories").insert({name,slug,parent_id:$("#cParent")?.value||null,image_url,sort_order:categories.length,is_visible:true});
+   status("#categoryStatus",error?.message||"Category added.");if(!error){e.target.reset();await loadCategories()}
+  }catch(err){status("#categoryStatus",err.message||"Could not upload category image.")}
 });
 $("#adminCategories").addEventListener("click",async e=>{
   const b=e.target.closest("[data-delete-category]");if(!b||!confirm("Delete this category? Products using it should be reassigned first."))return;
   const {error}=await db.from("categories").delete().eq("id",b.dataset.deleteCategory);status("#categoryStatus",error?.message||"Category deleted.");await loadCategories();
 });
-$("#bannerForm").addEventListener("submit",e=>{e.preventDefault();status("#bannerStatus","Banner URL received. Connect site_settings and apply it to the homepage hero in the next implementation step.")});
+$("#bannerForm").addEventListener("submit",async e=>{
+ e.preventDefault();try{
+  const uploaded=await uploadSingleImage("#bannerFile");
+  const imageUrl=uploaded||$("#bannerUrl").value.trim();
+  if(!imageUrl)throw new Error("Choose a banner image or paste an image URL.");
+  const {error}=await db.from("site_settings").upsert({key:"hero_image_url",value:imageUrl,updated_at:new Date().toISOString(),updated_by:currentUser.id},{onConflict:"key"});
+  if(error)throw error;$("#bannerUrl").value=imageUrl;$("#bannerFile").value="";status("#bannerStatus","Homepage banner saved successfully.");
+ }catch(err){status("#bannerStatus",err.message||"Could not save banner image.")}
+});
 if(!configured)status("#loginStatus","Demo storefront is active. Configure Supabase in config.js to enable secure moderator login and publishing.");
