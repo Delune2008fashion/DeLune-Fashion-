@@ -1,6 +1,7 @@
-// Add your Supabase project credentials and WhatsApp number before launch.
 window.DELUNE_CONFIG = {
-  SUPABASE_URL: "YOUR_SUPABASE_PROJECT_URL",
-  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY",
-  WHATSAPP_NUMBER: "8801XXXXXXXXX" // country code + number, digits only
+  SUPABASE_URL: "https://mxbogsdrsrftbxwxslrj.supabase.co",
+
+  SUPABASE_ANON_KEY: "sb_publishable_T3VhMypEjJwWIeJetFwTPQ_6Th1j7-v",
+
+  WHATSAPP_NUMBER: "8801750473964"
 };
