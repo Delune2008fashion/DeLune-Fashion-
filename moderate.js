@@ -60,6 +60,8 @@ $("#adminProducts").addEventListener("click",async e=>{
 });
 function resetCategoryForm(){ $("#categoryForm").reset();$("#cId").value="";$("#saveCategoryBtn").textContent="Add category"; }
 $("#resetCategory").addEventListener("click",resetCategoryForm);
+$("#cImageFile").addEventListener("change",e=>$("#cImageFileName").textContent=e.target.files[0]?.name||"No category photo selected.");
+$("#bannerFile").addEventListener("change",e=>$("#bannerFileName").textContent=e.target.files[0]?.name||"No banner image selected.");
 $("#categoryForm").addEventListener("submit",async e=>{
   e.preventDefault();const id=$("#cId").value,name=$("#cName").value.trim(),slug=$("#cSlug").value.trim()||slugify(name);
   try{
