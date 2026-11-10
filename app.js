@@ -1,48 +1,8 @@
-const $=(s,root=document)=>root.querySelector(s);
-const money=n=>"৳"+Number(n||0).toLocaleString("en-BD");
-const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=(s,r=document)=>r.querySelector(s),money=n=>"৳"+Number(n||0).toLocaleString("en-BD"),safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const imageOf=p=>p.images?.[0]||"https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80";
+const messenger=(p,size)=>"https://m.me/1251130614753409?ref="+encodeURIComponent("Hello DeLune! I'd like to order "+p.name+" ("+money(p.price)+"). Size: "+size+". Please confirm availability.");
 function productCard(p){return `<a class="product-card" href="product.html?id=${encodeURIComponent(p.id)}"><div class="product-photo"><img loading="lazy" src="${safe(imageOf(p))}" alt="${safe(p.name)}">${p.exclusive?'<span class="product-tag">Exclusive</span>':""}</div><div class="product-info"><h3>${safe(p.name)}</h3><div class="product-meta"><span>${safe(p.category||"Collection")}</span><strong>${money(p.price)}</strong></div></div></a>`}
-async function renderHome(){
-  const grid=$("#exclusiveGrid"), cats=$("#categoryGrid");
-  if(!grid||!cats)return;
-  try{
-    const [ps,cs]=await Promise.all([DeLuneStore.products({exclusive:true}),DeLuneStore.categories()]);
-    grid.innerHTML=ps.length?ps.map(productCard).join():'<div class="empty-state">New exclusive pieces are coming soon.</div>';
-    cats.innerHTML=cs.map(c=>`<a class="category-card" href="categories.html?category=${encodeURIComponent(c.slug)}"><img loading="lazy" src="${safe(c.image_url||imageOf({}))}" alt="${safe(c.name)}"><div><h3>${safe(c.name)}</h3><span>Explore collection ↗</span></div></a>`).join("");
-  }catch(e){grid.innerHTML='<div class="empty-state">The collection could not load. Please try again later.</div>';cats.innerHTML="";}
-}
-async function renderCategories(){
-  const grid=$("#allProducts"), filters=$("#filters"); if(!grid)return;
-  const params=new URLSearchParams(location.search); let category=params.get("category")||"";
-  try{
-    const cs=await DeLuneStore.categories();
-    filters.innerHTML=`<button class="filter-btn ${!category?"active":""}" data-category="">All</button>`+cs.map(c=>`<button class="filter-btn ${category===c.slug?"active":""}" data-category="${safe(c.slug)}">${safe(c.name)}</button>`).join("");
-    async function load(cat){category=cat;filters.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.category===cat));const ps=await DeLuneStore.products({category:cat||undefined});grid.innerHTML=ps.length?ps.map(productCard).join():'<div class="empty-state">No available products in this collection yet.</div>';}
-    filters.addEventListener("click",e=>{const b=e.target.closest("button[data-category]");if(b)load(b.dataset.category)});
-    await load(category);
-  }catch(e){grid.innerHTML='<div class="empty-state">Could not load products.</div>'}
-}
-async function renderProduct(){
-  const root=$("#productDetail");if(!root)return;
-  const id=new URLSearchParams(location.search).get("id");
-  try{
-    const p=await DeLuneStore.product(id);if(!p){root.innerHTML='<p class="empty-state">Product not found.</p>';return;}
-    const sizes=(p.sizes||[]).map(s=>`<span class="size-chip">${safe(s)}</span>`).join("")||'<span class="size-chip">One size</span>';
-    root.innerHTML=`<img class="detail-image" src="${safe(imageOf(p))}" alt="${safe(p.name)}"><div class="detail-copy"><p class="eyebrow">${p.exclusive?"EXCLUSIVE PIECE":safe(p.category||"DELUNE COLLECTION")}</p><h1>${safe(p.name)}</h1><p class="detail-price">${money(p.price)}</p><p class="detail-description">${safe(p.description||"A considered addition to your everyday collection.")}</p><p class="eyebrow" style="margin-top:30px">AVAILABLE SIZES</p><div class="size-list">${sizes}</div><p class="detail-description">${p.available?"Available to order":"Currently unavailable"}</p>${p.available?`<a class="whatsapp-button" target="_blank" rel="noopener" href="${whatsappUrl(p)}">Order on WhatsApp ↗</a>`:""}</div>`;
-  }catch(e){root.innerHTML='<p class="empty-state">Could not load this product.</p>'}
-}
-function whatsappUrl(p){
-  const number=window.DELUNE_CONFIG?.WHATSAPP_NUMBER||"";
-  const msg=`Hello DeLune, I would like to order: ${p.name} (${money(p.price)}). Please confirm available sizes and delivery details.`;
-  return `https://wa.me/${number.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`;
-}
-function init(){
-  $("#year")&&($("#year").textContent=new Date().getFullYear());
-  $("#menuToggle")?.addEventListener("click",()=>{const panel=$("#menuPanel"),open=panel.classList.toggle("open");$("#menuToggle").setAttribute("aria-expanded",String(open))});
-  $("#searchToggle")?.addEventListener("click",()=>{$("#searchBar").classList.toggle("open");$("#searchInput").focus()});
-  $("#searchClose")?.addEventListener("click",()=>$("#searchBar").classList.remove("open"));
-  $("#searchInput")?.addEventListener("keydown",e=>{if(e.key==="Enter")location.href="categories.html?q="+encodeURIComponent(e.target.value)});
-  renderHome();renderCategories();renderProduct();
-}
-document.addEventListener("DOMContentLoaded",init);
+async function renderHome(){const grid=$("#exclusiveGrid"),cats=$("#categoryGrid");if(!grid||!cats)return;try{const [ps,cs]=await Promise.all([DeLuneStore.products({exclusive:true}),DeLuneStore.categories()]);grid.innerHTML=ps.length?ps.map(productCard).join(""):'<div class="empty-state">New exclusive pieces are coming soon.</div>';cats.innerHTML=cs.filter(c=>!c.parent_id).map(c=>{const children=cs.filter(x=>x.parent_id===c.id);return `<div class="category-card"><img loading="lazy" src="${safe(c.image_url||imageOf({}))}" alt="${safe(c.name)}"><div><h3>${safe(c.name)}</h3><a href="categories.html?category=${encodeURIComponent(c.slug)}">Explore collection ↗</a>${children.map(x=>`<p><a href="categories.html?category=${encodeURIComponent(x.slug)}">${safe(x.name)}</a></p>`).join("")}</div></div>`}).join("")}catch(e){grid.innerHTML='<div class="empty-state">The collection could not load.</div>';cats.innerHTML=""}}
+async function renderCategories(){const grid=$("#allProducts"),filters=$("#filters");if(!grid)return;let category=new URLSearchParams(location.search).get("category")||"";try{const cs=await DeLuneStore.categories();filters.innerHTML='<button class="filter-btn" data-category="">All</button>'+cs.map(c=>`<button class="filter-btn" data-category="${safe(c.slug)}">${c.parent_id?"↳ ":""}${safe(c.name)}</button>`).join("");async function load(cat){category=cat;filters.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.category===cat));const ps=await DeLuneStore.products({category:cat||undefined});grid.innerHTML=ps.length?ps.map(productCard).join():'<div class="empty-state">No products in this collection yet.</div>'}filters.addEventListener("click",e=>{const b=e.target.closest("[data-category]");if(b)load(b.dataset.category)});await load(category)}catch(e){grid.innerHTML='<div class="empty-state">Could not load products.</div>'}}
+async function renderProduct(){const root=$("#productDetail");if(!root)return;try{const p=await DeLuneStore.product(new URLSearchParams(location.search).get("id"));if(!p){root.innerHTML='<p class="empty-state">Product not found.</p>';return}const pics=p.images?.length?p.images:[imageOf(p)],sizes=p.sizes?.length?p.sizes:["One size"];root.innerHTML=`<div class="product-gallery"><div class="gallery-stage"><button class="gallery-arrow prev" type="button" aria-label="Previous photo">‹</button><img class="detail-image" id="galleryMain" src="${safe(pics[0])}" alt="${safe(p.name)}"><button class="gallery-arrow next" type="button" aria-label="Next photo">›</button></div><div class="gallery-thumbs">${pics.map((u,i)=>`<button type="button" class="gallery-thumb ${i===0?"active":""}" data-i="${i}"><img src="${safe(u)}" alt="Photo ${i+1}"></button>`).join("")}</div></div><div class="detail-copy"><p class="eyebrow">${p.exclusive?"EXCLUSIVE PIECE":safe(p.category)}</p><h1>${safe(p.name)}</h1><p class="detail-price">${money(p.price)}</p><p class="detail-description">${safe(p.description||"")}</p><p class="eyebrow">SELECT YOUR SIZE</p><div class="size-list">${sizes.map((s,i)=>`<button type="button" class="size-chip size-choice ${i===0?"selected":""}" data-size="${safe(s)}">${safe(s)}</button>`).join("")}</div><p class="detail-description">${p.available?"Available to order":"Currently unavailable"}</p>${p.available?'<a class="whatsapp-button messenger-button" target="_blank" rel="noopener">Order on Messenger ↗</a>':""}</div>`;let selected=sizes[0];const order=$(".messenger-button",root),setLink=()=>{if(order)order.href=messenger(p,selected)};setLink();root.querySelectorAll(".size-choice").forEach(b=>b.onclick=()=>{selected=b.dataset.size;root.querySelectorAll(".size-choice").forEach(x=>x.classList.toggle("selected",x===b));setLink()});let n=0;const show=i=>{n=(i+pics.length)%pics.length;$("#galleryMain",root).src=pics[n];root.querySelectorAll(".gallery-thumb").forEach((b,j)=>b.classList.toggle("active",j===n))};$(".prev",root).onclick=()=>show(n-1);$(".next",root).onclick=()=>show(n+1);root.querySelectorAll(".gallery-thumb").forEach(b=>b.onclick=()=>show(+b.dataset.i));let x=0;$(".gallery-stage",root).addEventListener("touchstart",e=>x=e.touches[0].clientX,{passive:true});$(".gallery-stage",root).addEventListener("touchend",e=>{let d=e.changedTouches[0].clientX-x;if(Math.abs(d)>35)show(n+(d<0?1:-1))},{passive:true})}catch(e){root.innerHTML='<p class="empty-state">Could not load this product.</p>'}}
+function init(){$("#year")&&($("#year").textContent=new Date().getFullYear());$("#menuToggle")?.addEventListener("click",()=>$("#menuPanel").classList.toggle("open"));$("#searchToggle")?.addEventListener("click",()=>{$("#searchBar").classList.toggle("open");$("#searchInput").focus()});$("#searchClose")?.addEventListener("click",()=>$("#searchBar").classList.remove("open"));$("#searchInput")?.addEventListener("keydown",e=>{if(e.key==="Enter")location.href="categories.html?q="+encodeURIComponent(e.target.value)});renderHome();renderCategories();renderProduct()}document.addEventListener("DOMContentLoaded",init);
