@@ -17,3 +17,12 @@ body{background:#FADDE7;color:#281923}.announcement,.brand-note{background:#F0BF
 .category-subcategories[hidden]{display:none}
 .category-subcategories a{display:block;text-decoration:none;padding:5px 0}
 .category-subcategories .category-all-link{font-size:.9em;font-weight:600}
+
+/* Expandable parent categories on the Collections page */
+.collection-accordion{border-bottom:1px solid var(--line);padding:4px 0}
+.collection-parent{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 12px;border:0;background:transparent;color:inherit;font:inherit;font-weight:600;text-align:left;cursor:pointer}
+.collection-children{padding:4px 12px 12px 22px;display:flex;flex-direction:column;align-items:stretch;gap:6px}
+.collection-children[hidden]{display:none}
+.collection-child{width:100%;text-align:left;justify-content:flex-start}
+.collection-child.active{background:#281923;color:#fff8fa}
+.collection-all{font-weight:600}
