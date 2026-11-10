@@ -109,3 +109,8 @@ insert into public.categories(name,slug,image_url,sort_order) values
 ('Jackets','jackets','https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=900&q=80',3),
 ('T-shirts','t-shirts','https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',4)
 on conflict(slug) do nothing;
+
+
+-- Category nesting support (safe to run on an existing project).
+alter table public.categories add column if not exists parent_id uuid references public.categories(id) on delete cascade;
+create index if not exists categories_parent_id_idx on public.categories(parent_id);
