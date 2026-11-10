@@ -30,10 +30,11 @@
     const {data,error}=await client.from("categories").select("*").eq("is_visible",true).order("sort_order");
     if(error) throw error; return data||[];
   }
+  async function heroImage(){if(!client)return "";const {data,error}=await client.from("site_settings").select("value").eq("key","hero_image_url").maybeSingle();if(error)throw error;return data?.value||""}
   async function product(id) {
     if(!client) return demoProducts.find(p=>p.id===id);
     const {data,error}=await client.from("products").select("*").eq("id",id).single();
     if(error) throw error; return {...data,exclusive:data.is_exclusive,available:data.is_available,images:data.image_urls||[],sizes:data.sizes||[]};
   }
-  window.DeLuneStore={client,products,categories,product,configured:!!client,demoProducts,demoCategories};
+  window.DeLuneStore={client,products,categories,product,heroImage,configured:!!client,demoProducts,demoCategories};
 })();
