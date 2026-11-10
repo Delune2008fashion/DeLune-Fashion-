@@ -38,3 +38,6 @@ body{background:#FADDE7;color:#281923}.announcement,.brand-note{background:#F0BF
 #filters .collection-child{display:block;width:100%;text-align:left;padding:13px 12px;border:0;border-bottom:1px solid #EBC5D3;background:transparent;color:#281923;cursor:pointer}
 #filters .collection-child.active{background:#281923;color:#FFF8FA}
 #filters .collection-chevron{font-size:18px}
+
+/* Official DeLune transparent logo */
+.delune-logo{display:block;width:142px;height:62px;object-fit:contain;object-position:left center}.wordmark{display:flex;align-items:center;text-decoration:none}.moderator-logo{display:inline-flex;align-items:center;margin:8px 0}@media(max-width:600px){.delune-logo{width:116px;height:52px}}
