@@ -41,3 +41,14 @@ body{background:#FADDE7;color:#281923}.announcement,.brand-note{background:#F0BF
 
 /* Official DeLune transparent logo */
 .delune-logo{display:block;width:142px;height:62px;object-fit:contain;object-position:left center}.wordmark{display:flex;align-items:center;text-decoration:none}.moderator-logo{display:inline-flex;align-items:center;margin:8px 0}@media(max-width:600px){.delune-logo{width:116px;height:52px}}
+
+/* Larger DeLune logo for clear visibility */
+.site-header .wordmark .delune-logo{width:210px;height:88px;max-width:none;object-fit:contain;object-position:left center}
+.site-header .wordmark{flex:0 0 auto;min-width:0}
+.footer-wordmark .delune-logo{width:190px;height:82px}
+.moderator-logo .delune-logo{width:210px;height:88px}
+@media(max-width:600px){
+ .site-header .wordmark .delune-logo{width:178px;height:76px}
+ .footer-wordmark .delune-logo{width:160px;height:70px}
+ .moderator-logo .delune-logo{width:185px;height:78px}
+}
