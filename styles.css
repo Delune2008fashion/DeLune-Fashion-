@@ -78,3 +78,7 @@ body{background:#FADDE7;color:#281923}.announcement,.brand-note{background:#F0BF
 .site-footer{display:flex;flex-direction:column;align-items:center;text-align:center}
 .site-footer>.footer-wordmark{display:flex;justify-content:center;align-items:center;width:100%;margin:0 auto}
 .site-footer>.footer-wordmark .delune-logo{object-position:center center;margin:0 auto}
+
+/* Center the DeLune logo in the footer */
+.site-footer .footer-wordmark,.footer .footer-wordmark,.footer-brand,.site-footer .brand{display:flex!important;justify-content:center!important;align-items:center!important;width:100%;text-align:center!important;margin-left:auto!important;margin-right:auto!important}
+.site-footer .footer-wordmark .delune-logo,.footer .footer-wordmark .delune-logo,.footer-brand .delune-logo,.site-footer .brand .delune-logo{object-position:center!important;margin-left:auto!important;margin-right:auto!important}
