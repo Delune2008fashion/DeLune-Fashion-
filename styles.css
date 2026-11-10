@@ -52,3 +52,14 @@ body{background:#FADDE7;color:#281923}.announcement,.brand-note{background:#F0BF
  .footer-wordmark .delune-logo{width:160px;height:70px}
  .moderator-logo .delune-logo{width:185px;height:78px}
 }
+
+/* Header logo visibility: enlarge beyond the previous constrained dimensions */
+.site-header{height:112px!important;min-height:112px!important}
+.site-header>a.wordmark{width:280px!important;height:104px!important;display:flex!important;align-items:center!important;flex:0 0 280px!important;overflow:visible!important}
+.site-header>a.wordmark img.delune-logo{width:280px!important;height:104px!important;max-width:none!important;object-fit:contain!important;object-position:left center!important}
+@media(max-width:600px){
+ .site-header{height:96px!important;min-height:96px!important;padding-left:3%!important;padding-right:3%!important}
+ .site-header>a.wordmark{width:226px!important;height:90px!important;flex:0 0 226px!important}
+ .site-header>a.wordmark img.delune-logo{width:226px!important;height:90px!important}
+ .site-header .header-actions{gap:4px!important}
+}
