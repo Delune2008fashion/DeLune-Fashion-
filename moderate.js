@@ -6,7 +6,8 @@ let db=DeLuneStore.client, currentUser=null, categories=[];
 function slugify(s){return s.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
 async function loadCategories(){
   categories=await DeLuneStore.categories();
-  $("#pCategory").innerHTML=categories.map(c=>`<option value="${c.slug}">${c.name}</option>`).join("");
+  $("#pCategory").innerHTML=categories.map(c=>`<option value="${c.slug}">${c.parent_id?"↳ ":""}${c.name}</option>`).join("");
+  const parent=$("#cParent");if(parent)parent.innerHTML=`<option value="">Top-level category</option>`+categories.filter(c=>!c.parent_id).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
   $("#adminCategories").innerHTML=categories.map(c=>`<div class="admin-item"><div><strong>${c.name}</strong><small>${c.slug}</small></div><button class="admin-button secondary" data-delete-category="${c.id||c.slug}">Delete</button></div>`).join("");
 }
 async function loadProducts(){
@@ -55,7 +56,7 @@ $("#adminProducts").addEventListener("click",async e=>{
 });
 $("#categoryForm").addEventListener("submit",async e=>{
   e.preventDefault();const name=$("#cName").value.trim(),slug=$("#cSlug").value.trim()||slugify(name);
-  const {error}=await db.from("categories").insert({name,slug,image_url:$("#cImage").value.trim(),sort_order:categories.length,is_visible:true});
+  const {error}=await db.from("categories").insert({name,slug,parent_id:$("#cParent")?.value||null,image_url:$("#cImage").value.trim(),sort_order:categories.length,is_visible:true});
   status("#categoryStatus",error?.message||"Category added.");if(!error){e.target.reset();await loadCategories()}
 });
 $("#adminCategories").addEventListener("click",async e=>{
