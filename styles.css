@@ -88,3 +88,12 @@ body{background:#FADDE7;color:#281923}.announcement,.brand-note{background:#F0BF
 .order-buttons .whatsapp-button{flex:1 1 180px;text-align:center;display:inline-flex;align-items:center;justify-content:center}
 .order-buttons .whatsapp-order{background:#238b55;color:#fff}
 .order-buttons .messenger-button{background:#2876df;color:#fff}
+
+/* Small creator credit on the About page */
+.creator-credit{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:7px;margin:52px auto 0;padding:22px 12px 0;border-top:1px solid #DDB8C7;max-width:220px}
+.froyo-credit-logo{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px}
+.froyo-credit-logo img{display:block;width:100%;height:100%;object-fit:contain}
+.creator-credit p{margin:0;color:#81717A;font-size:10px;letter-spacing:.08em}
+.creator-credit p strong{color:#493440}
+.froyo-credit-link,.footer-credit-link{font-size:9px;color:#927083;text-decoration:underline;text-underline-offset:3px;letter-spacing:.06em}
+.footer-credit-link{margin-left:5px}
