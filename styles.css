@@ -410,3 +410,10 @@ a,button{color:#fff!important}
 .checkout-hint{font-size:12px;line-height:1.6;color:#fff}
 body.checkout-open{overflow:hidden}
 @media(max-width:480px){.checkout-panel{padding:28px 17px 18px}.checkout-progress span{font-size:9px}.checkout-content h2{font-size:26px}}
+
+/* Separate, visible order-channel choices */
+.checkout-submit-options{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
+.checkout-submit-options .checkout-back{width:100%;min-height:44px}
+.checkout-submit-options .checkout-submit,
+.checkout-submit-options .checkout-messenger{width:100%;min-height:48px;display:flex;justify-content:center;align-items:center}
+.checkout-submit-options .messenger-button{background:#1877F2!important;border-color:#1877F2!important;color:#fff!important}
