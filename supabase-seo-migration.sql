@@ -2,6 +2,7 @@
 alter table public.products add column if not exists slug text;
 alter table public.products add column if not exists seo_title text;
 alter table public.products add column if not exists seo_description text;
+alter table public.products add column if not exists seo_keywords text not null default '';
 alter table public.products add column if not exists is_published boolean not null default true;
 update public.products
 set slug = trim(both '-' from regexp_replace(lower(name), '[^a-z0-9]+', '-', 'g')) || '-' || left(id::text, 8)
