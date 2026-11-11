@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Page moved — DeLune</title>
+<style>
+:root{color-scheme:light}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#f4d1df;color:#242021;font:16px/1.6 Arial,sans-serif}.card{max-width:520px;padding:36px;background:#fff8fa;text-align:center}.card h1{font-family:Georgia,serif;font-weight:400}.card a{color:inherit}
+</style>
+<script>
+(function(){
+  var host=location.hostname.toLowerCase();
+  var path=location.pathname;
+  var legacyHost=host==="fahad09belal.github.io";
+  path=path.replace(/^\\/DeLune-Fashion-(?=\\/|$)/i,"");
+  if(!path)path="/";
+  var clean=path.replace(/\\/+$/,"")||"/";
+  var routes={"/":"/index.html","/index":"/index.html","/categories":"/categories.html","/about":"/about.html","/contact":"/contact.html","/product":"/product.html","/moderate":"/moderate.html"};
+  var target=routes[clean.toLowerCase()];
+  if(target){
+    location.replace("https://delune.qd.je"+target+location.search+location.hash);
+    return;
+  }
+  if(legacyHost && /\\.html$/i.test(clean)){
+    location.replace("https://delune.qd.je"+clean+location.search+location.hash);
+  }
+})();
+</script>
+</head>
+<body>
+<main class="card">
+<h1>That page has moved</h1>
+<p>DeLune now lives at <strong>delune.qd.je</strong>.</p>
+<p><a href="https://delune.qd.je/">Continue to DeLune</a></p>
+</main>
+</body>
+</html>
