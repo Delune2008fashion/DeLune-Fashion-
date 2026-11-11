@@ -22,7 +22,25 @@ for (const p of products) {
   const description = p.seo_description || ((p.description || "Discover " + p.name + " at DeLune.") + " Price: ৳" + Number(p.price || 0).toLocaleString("en-BD") + ".");
   const image = p.image_urls?.[0] || site + "/logo.png";
   let html = base;
-  html = html.replace("<head>", '<head>\n<base href="/">');
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: p.name,
+    description,
+    keywords: String(p.seo_keywords || "").split(",").map(x => x.trim()).filter(Boolean),
+    image: p.image_urls || [],
+    sku: p.id,
+    brand: { "@type": "Brand", name: "DeLune" },
+    offers: {
+      "@type": "Offer",
+      url,
+      priceCurrency: "BDT",
+      price: Number(p.price || 0),
+      availability: p.is_available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+    }
+  };
+  const jsonLd = JSON.stringify(structuredData).replace(/</g, "\\u003c");
+  html = html.replace("<head>", '<head>\\n<base href="/">\\n<script type="application/ld+json">' + jsonLd + '</script>');
   html = html.replace(/<title>[^<]*<\/title>/i, "<title>" + esc(title) + "</title>");
   html = html.replace(/<meta name="description" content="[^"]*">/i, '<meta name="description" content="' + esc(description) + '">');
   html = html.replace(/<link rel="canonical" href="[^"]*">/i, '<link rel="canonical" href="' + url + '">');
