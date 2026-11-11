@@ -49,7 +49,7 @@ async function renderProduct(){
     progress.querySelectorAll("span").forEach((el,i)=>el.classList.toggle("current",i===step-1));
     if(step===1)content.innerHTML=`<h2 id="checkoutTitle">Select quantity</h2><div class="checkout-product"><img src="${safe(pics[0]||"")}" alt=""><div><strong>${safe(p.name)}</strong><p>${safe(selected)}</p><b>${money(p.price)} each</b></div></div><div class="quantity-control"><button type="button" data-qty="-1" aria-label="Decrease quantity">−</button><output>${quantity}</output><button type="button" data-qty="1" aria-label="Increase quantity">＋</button></div><p class="checkout-total">Subtotal <strong>${money(total())}</strong></p><button type="button" class="whatsapp-button checkout-next">Continue</button>`;
     if(step===2)content.innerHTML=`<h2 id="checkoutTitle">Delivery information</h2><form class="checkout-form"><label>Your name<input name="name" autocomplete="name" required maxlength="100" value="${safe(customer.name)}"></label><label>Contact number<input name="phone" type="tel" autocomplete="tel" required maxlength="25" value="${safe(customer.phone)}" placeholder="+880..."></label><label>Delivery address<textarea name="address" autocomplete="street-address" required maxlength="500" rows="3">${safe(customer.address)}</textarea></label><div class="checkout-actions"><button type="button" class="checkout-back">Back</button><button type="submit" class="whatsapp-button">Review order</button></div></form>`;
-    if(step===3)content.innerHTML=`<h2 id="checkoutTitle">Review your order</h2><div class="checkout-review"><p><span>Product</span><strong>${safe(p.name)}</strong></p><p><span>Size / variant</span><strong>${safe(selected)}</strong></p><p><span>Quantity</span><strong>${quantity}</strong></p><p><span>Unit price</span><strong>${money(p.price)}</strong></p><p><span>Name</span><strong>${safe(customer.name)}</strong></p><p><span>Contact</span><strong>${safe(customer.phone)}</strong></p><p><span>Address</span><strong>${safe(customer.address)}</strong></p><p class="checkout-total"><span>Total</span><strong>${money(total())}</strong></p></div><p class="checkout-hint">Your order details will open in WhatsApp. Send the message there to place your order.</p><div class="checkout-actions"><button type="button" class="checkout-back">Back</button><button type="button" class="whatsapp-button checkout-submit">Continue to WhatsApp</button></div>`;
+    if(step===3)content.innerHTML=`<h2 id="checkoutTitle">Review your order</h2><div class="checkout-review"><p><span>Product</span><strong>${safe(p.name)}</strong></p><p><span>Size / variant</span><strong>${safe(selected)}</strong></p><p><span>Quantity</span><strong>${quantity}</strong></p><p><span>Unit price</span><strong>${money(p.price)}</strong></p><p><span>Name</span><strong>${safe(customer.name)}</strong></p><p><span>Contact</span><strong>${safe(customer.phone)}</strong></p><p><span>Address</span><strong>${safe(customer.address)}</strong></p><p class="checkout-total"><span>Total</span><strong>${money(total())}</strong></p></div><p class="checkout-hint">Your order details will open in WhatsApp. Send the message there to place your order.</p><div class="checkout-actions checkout-submit-options"><button type="button" class="checkout-back">Back</button><button type="button" class="whatsapp-button checkout-submit">Order via WhatsApp</button><button type="button" class="whatsapp-button messenger-button checkout-messenger">Order via Messenger</button></div>`;
    };
    const close=()=>{overlay.hidden=true;document.body.classList.remove("checkout-open")};
    const open=()=>{step=1;quantity=1;paint();overlay.hidden=false;document.body.classList.add("checkout-open");$(".checkout-close",overlay).focus()};
@@ -61,11 +61,19 @@ async function renderProduct(){
     const qty=e.target.closest("[data-qty]");if(qty){quantity=Math.max(1,Math.min(99,quantity+Number(qty.dataset.qty)));paint();return}
     if(e.target.closest(".checkout-next")){step=2;paint();return}
     if(e.target.closest(".checkout-back")){step=Math.max(1,step-1);paint();return}
-    if(e.target.closest(".checkout-submit")){
+    if(e.target.closest(".checkout-submit")||e.target.closest(".checkout-messenger")){
      const msg=["Hello DeLune, I would like to place an order:","Product: "+p.name,"Variant: "+selected,"Quantity: "+quantity,"Unit price: "+money(p.price),"Total: "+money(total()),"Name: "+customer.name,"Contact: "+customer.phone,"Delivery address: "+customer.address].join("\n");
-     const number=String(window.DELUNE_CONFIG?.WHATSAPP_NUMBER||"").replace(/\D/g,"");
-     if(!number){alert("WhatsApp ordering is not configured yet. Please contact DeLune.");return}
-     window.open("https://wa.me/"+number+"?text="+encodeURIComponent(msg),"_blank","noopener");
+     if(e.target.closest(".checkout-messenger")){
+      const messengerUrl=window.DELUNE_CONFIG?.MESSENGER_URL||"";
+      if(!messengerUrl){alert("Messenger ordering is not configured.");return}
+      try{await navigator.clipboard.writeText(msg)}catch(err){}
+      window.open(messengerUrl,"_blank","noopener");
+      alert("Your order details are ready. Paste the copied message in Messenger to send your order.");
+     }else{
+      const number=String(window.DELUNE_CONFIG?.WHATSAPP_NUMBER||"").replace(/\D/g,"");
+      if(!number){alert("WhatsApp ordering is not configured yet. Please contact DeLune.");return}
+      window.open("https://wa.me/"+number+"?text="+encodeURIComponent(msg),"_blank","noopener");
+     }
      close();
     }
    });
