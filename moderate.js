@@ -55,12 +55,26 @@ $("#savePageTexts").addEventListener("click",async()=>{try{const next={...savedP
 $("#resetPageTexts").addEventListener("click",async()=>{try{await fetchPageTexts();await renderTextFields();status("#pageTextStatus","Saved text values reloaded.")}catch(e){status("#pageTextStatus",e.message)}});
 
 function reset(){ $("#productForm").reset();$("#productId").value="";$("#productFormTitle").textContent="Add a product";$("#pAvailable").checked=true;$("#pPublished").checked=true;$("#pSeoTitle").value="";$("#pSeoDescription").value="";$("#pSeoKeywords").value="";updateSEOPreview(); }
+function makeUploadId(){
+  const cryptoApi=window.crypto;
+  if(cryptoApi&&typeof cryptoApi.randomUUID==="function")return cryptoApi.randomUUID();
+  if(cryptoApi&&typeof cryptoApi.getRandomValues==="function"){
+    const bytes=new Uint8Array(16);
+    cryptoApi.getRandomValues(bytes);
+    bytes[6]=(bytes[6]&0x0f)|0x40;
+    bytes[8]=(bytes[8]&0x3f)|0x80;
+    const hex=Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
+    return hex.slice(0,8)+"-"+hex.slice(8,12)+"-"+hex.slice(12,16)+"-"+hex.slice(16,20)+"-"+hex.slice(20);
+  }
+  throw new Error("Secure random ID generation is unavailable in this browser. Please open DeLune over HTTPS in an updated browser.");
+}
+
 async function uploadImages(files){
   if(files.length>8)throw new Error("Choose no more than 8 images at once.");
   const urls=[];for(const file of files){
     if(!file.type.startsWith("image/"))throw new Error("Only image files can be uploaded.");
     if(file.size>5*1024*1024)throw new Error("Each image must be 5 MB or smaller.");
-    const path=`${currentUser.id}/${Date.now()}-${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+    const path=`${currentUser.id}/${Date.now()}-${makeUploadId()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
     const {error}=await db.storage.from("product-images").upload(path,file,{upsert:false,contentType:file.type});
     if(error)throw error;const {data}=db.storage.from("product-images").getPublicUrl(path);urls.push(data.publicUrl);
   }return urls;
