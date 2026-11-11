@@ -40,3 +40,24 @@ Visit `/moderate.html`, sign in with the moderator email and password, then add/
 - The About and Contact copy is starter content; update it with DeLune's real brand story and contact details.
 - Product photo replacement uploads new files; old storage objects are not automatically cleaned up.
 - Add rate limiting / CAPTCHA and operational backups before a high-traffic launch.
+
+## Quality and security improvements
+
+- Storefront transitions respect the user's `prefers-reduced-motion` setting.
+- Product/category lists show animated loading states and retry controls after data errors.
+- SEO descriptions, canonical URLs, Open Graph and Twitter preview metadata are included on public pages. Product detail metadata is updated from the selected product.
+- Responsive browser smoke tests cover 320, 360, 390 and 430 px viewports. GitHub Actions runs them on pushes and pull requests.
+- Moderator Studio checks membership in `public.moderators` after sign-in and when restoring a session. Client-side image checks limit uploads to 8 files, 5 MiB each; Supabase Storage enforces image MIME types and the 5 MiB limit too.
+- `security-smoke-tests.sql` contains manual RLS checks. Apply the updated `supabase-schema.sql` in the Supabase SQL Editor before relying on the hardened policies.
+
+### Run browser tests locally
+
+```sh
+npm install
+npx playwright install chromium
+npm run test:mobile
+``
+
+### Supabase security notes
+
+The browser uses only the Supabase publishable/anon key. Never put a `service_role` key in `config.js`. Public visitors can read available products, visible categories and the two public site settings; only UUIDs listed in `public.moderators` can manage catalog content. Run `security-smoke-tests.sql` after applying the schema and verify a non-moderator account cannot write.
