@@ -188,3 +188,25 @@ button:active,.button:active,.filter-btn:active,.size-choice:active{transform:sc
  .hero-copy,.hero-copy .eyebrow,.hero-copy h1,.hero-copy .hero-description,.hero-copy .button,.hero-image,.hero-image::after,.intro-strip span,.product-card,.category-card,.page-heading,.detail-copy,.brand-note h2,.site-footer{animation:none!important}
  .menu-panel,.search-bar{transform:none!important;transition:none!important}
 }
+
+
+/* DeLune motion system: scroll reveals, soft page transitions and gallery slides */
+.motion-reveal{opacity:0;transform:translateY(22px);transition:opacity .65s var(--ease-luxe),transform .65s var(--ease-luxe);will-change:opacity,transform}
+.motion-reveal.is-visible{opacity:1;transform:translateY(0);will-change:auto}
+.product-card.motion-reveal{animation:none}
+.category-card.motion-reveal{animation:none}
+body{animation:deLunePageIn .38s ease both}
+body.is-leaving{opacity:0;transition:opacity .22s ease}
+.site-header .menu-panel{transform-origin:top right}
+.menu-panel.open{animation:deLuneMenuIn .24s var(--ease-luxe) both}
+.gallery-stage .detail-image{transition:opacity .2s ease,transform .28s var(--ease-luxe)}
+.gallery-stage .detail-image.gallery-changing{opacity:.35;transform:translateX(10px)}
+@keyframes deLunePageIn{from{opacity:0}to{opacity:1}}
+@keyframes deLuneMenuIn{from{opacity:0;transform:translateY(-9px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){
+ body{animation:none!important}
+ body.is-leaving{opacity:1!important;transition:none!important}
+ .motion-reveal,.motion-reveal.is-visible{opacity:1!important;transform:none!important;transition:none!important;will-change:auto!important}
+ .gallery-stage .detail-image,.gallery-stage .detail-image.gallery-changing{opacity:1!important;transform:none!important;transition:none!important}
+ .menu-panel.open{animation:none!important}
+}
