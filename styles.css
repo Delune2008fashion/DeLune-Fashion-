@@ -331,7 +331,7 @@ a,button{color:#fff!important}
 .site-header>a.wordmark::after{
   content:"DeLune";display:inline-flex;align-items:center;justify-content:center;
   padding:7px 13px;border:1px solid #520079;border-radius:2px;
-  color:#C7A5D8!important;font:600 25px/1 "Playfair Display",Georgia,serif;
+  color:#FFFFFF!important;font:600 25px/1 "Playfair Display",Georgia,serif;
   letter-spacing:.02em;white-space:nowrap;
 }
 @media(max-width:600px){
