@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-Disallow: /moderate.html
 Sitemap: https://delune.qd.je/sitemap.xml
