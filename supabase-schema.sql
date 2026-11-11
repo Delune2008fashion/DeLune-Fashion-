@@ -52,6 +52,14 @@ alter table public.products add column if not exists image_urls text[] not null 
 alter table public.products add column if not exists is_available boolean not null default true;
 alter table public.products add column if not exists is_exclusive boolean not null default false;
 alter table public.products add column if not exists updated_at timestamptz not null default now();
+alter table public.products add column if not exists slug text;
+alter table public.products add column if not exists seo_title text;
+alter table public.products add column if not exists seo_description text;
+-- Backfill stable, URL-safe slugs for products already in the catalogue.
+update public.products
+set slug = trim(both '-' from regexp_replace(lower(name), '[^a-z0-9]+', '-', 'g')) || '-' || left(id::text, 8)
+where slug is null or slug = '';
+create unique index if not exists products_slug_unique_idx on public.products(slug);
 
 -- ---------------------------------------------------------------------------
 -- Moderator allow-list. Add the Auth user UUID after creating the user.
