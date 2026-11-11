@@ -275,3 +275,8 @@ label,small,.status,.section-intro,.eyebrow,.admin-nav button span{color:#fff!im
 a,button{color:#fff!important}
 .admin-button.secondary,.filter-btn{border-color:#E9DDF0!important}
 .admin-item{border-color:#E9DDF0!important}
+
+/* Footer surface: requested lavender #C7A5D8 */
+.site-footer,footer,.footer-main,.footer-bottom,.footer-inner,.footer-content,.footer-links,.footer-newsletter{background-color:#C7A5D8!important;background-image:none!important;color:#FFFFFF!important}
+.site-footer * ,footer *{color:#FFFFFF!important}
+.site-footer a:hover,footer a:hover{color:#520079!important}
