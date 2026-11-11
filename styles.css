@@ -256,3 +256,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .admin-subnav .admin-button.secondary{background:#FBF8FD;color:#520079;border-color:#C7A9D8}
 .seo-preview{border-color:#D6C2E2;background:#FBF8FD}
 .status{color:#75627F}
+
+/* Main canvas: requested DeLune A66BC2 purple */
+:root{--ivory:#A66BC2}
+body{background:#A66BC2!important}
+.site-header,.menu-panel,.search-bar,.hero,.page-shell{background:#A66BC2!important}
