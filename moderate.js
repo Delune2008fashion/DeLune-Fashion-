@@ -25,7 +25,10 @@ $("#resetPageTexts").addEventListener("click",async()=>{try{await fetchPageTexts
 
 function reset(){ $("#productForm").reset();$("#productId").value="";$("#productFormTitle").textContent="Add a product";$("#pAvailable").checked=true; }
 async function uploadImages(files){
+  if(files.length>8)throw new Error("Choose no more than 8 images at once.");
   const urls=[];for(const file of files){
+    if(!file.type.startsWith("image/"))throw new Error("Only image files can be uploaded.");
+    if(file.size>5*1024*1024)throw new Error("Each image must be 5 MB or smaller.");
     const path=`${currentUser.id}/${Date.now()}-${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
     const {error}=await db.storage.from("product-images").upload(path,file,{upsert:false,contentType:file.type});
     if(error)throw error;const {data}=db.storage.from("product-images").getPublicUrl(path);urls.push(data.publicUrl);
@@ -42,9 +45,13 @@ $("#loginForm").addEventListener("submit",async e=>{
   if(identity.includes("@")) result=await db.auth.signInWithPassword({email:identity,password});
   else {status("#loginStatus","Use the moderator email address for Supabase sign-in.");return}
   if(result.error){status("#loginStatus",result.error.message);return}
-  currentUser=result.data.user;$("#loginPanel").classList.add("hidden");$("#dashboard").classList.remove("hidden");await refresh();
+  currentUser=result.data.user;
+  const {data:allowed,error:allowError}=await db.from("moderators").select("user_id").eq("user_id",currentUser.id).maybeSingle();
+  if(allowError||!allowed){await db.auth.signOut();currentUser=null;status("#loginStatus","This account is not authorized for DeLune Moderator Studio.");return}
+  $("#loginPanel").classList.add("hidden");$("#dashboard").classList.remove("hidden");try{await refresh()}catch(err){status("#productStatus","Dashboard data could not load: "+(err.message||"Please refresh."))}
 });
-$("#logoutBtn").onclick=async()=>{await db.auth.signOut();location.reload()};
+$("#logoutBtn").onclick=async()=>{try{await db.auth.signOut()}finally{location.reload()}};
+(async()=>{if(!configured)return;try{const {data}=await db.auth.getSession();if(!data.session)return;currentUser=data.session.user;const {data:allowed,error}=await db.from("moderators").select("user_id").eq("user_id",currentUser.id).maybeSingle();if(error||!allowed){await db.auth.signOut();currentUser=null;return}$("#loginPanel").classList.add("hidden");$("#dashboard").classList.remove("hidden");await refresh()}catch(err){status("#loginStatus","Could not restore moderator session. Please sign in again.")}})();
 $("#productForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!db||!currentUser){status("#productStatus","Sign in first.");return}
   const id=$("#productId").value;
@@ -98,4 +105,4 @@ $("#bannerForm").addEventListener("submit",async e=>{
   if(error)throw error;$("#bannerUrl").value=imageUrl;$("#bannerFile").value="";status("#bannerStatus","Homepage banner saved successfully.");
  }catch(err){status("#bannerStatus",err.message||"Could not save banner image.")}
 });
-if(!configured)status("#loginStatus","Demo storefront is active. Configure Supabase in config.js to enable secure moderator login and publishing.");
+if(!configured)status("#loginStatus","Supabase is not configured. Configure the project URL and publishable key to enable moderator access.");
