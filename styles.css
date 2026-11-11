@@ -378,3 +378,35 @@ a,button{color:#fff!important}
 .empty-state span{
   color:#FFFFFF!important;
 }
+
+/* DeLune multi-step checkout */
+.checkout-overlay{position:fixed;inset:0;z-index:1000;background:rgba(20,8,28,.76);display:grid;place-items:center;padding:16px;overflow:auto}
+.checkout-overlay[hidden]{display:none}
+.checkout-panel{position:relative;width:min(100%,520px);max-height:min(92vh,850px);overflow:auto;background:#A66BC2;color:#fff;border:1px solid #C7A5D8;padding:30px 24px 24px;box-shadow:0 18px 60px rgba(20,8,28,.28)}
+.checkout-close{position:absolute;right:14px;top:10px;border:0;background:transparent;color:#fff;font-size:30px;cursor:pointer}
+.checkout-progress{display:flex;gap:8px;justify-content:space-between;margin:8px 30px 28px 0}
+.checkout-progress span{font-size:10px;color:rgba(255,255,255,.65);padding-bottom:8px;border-bottom:2px solid rgba(255,255,255,.25);flex:1;text-align:center}
+.checkout-progress span.current{color:#fff;border-color:#520079;font-weight:700}
+.checkout-content h2{font:500 30px var(--serif);margin:0 0 22px;color:#fff}
+.checkout-product{display:flex;align-items:center;gap:15px;margin-bottom:22px}
+.checkout-product img{width:82px;height:100px;object-fit:cover;background:#520079}
+.checkout-product p{margin:6px 0;color:#fff}
+.quantity-control{display:flex;align-items:center;justify-content:center;gap:28px;margin:24px auto}
+.quantity-control button{width:44px;height:44px;border:1px solid #fff;background:#520079;color:#fff;font-size:24px;cursor:pointer}
+.quantity-control output{font-size:24px;min-width:32px;text-align:center}
+.checkout-total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,.35);padding:16px 0;color:#fff}
+.checkout-next,.checkout-submit{width:100%;justify-content:center;cursor:pointer}
+.checkout-form{display:grid;gap:15px}
+.checkout-form label{display:grid;gap:7px;color:#fff;font-size:12px}
+.checkout-form input,.checkout-form textarea{width:100%;padding:12px;border:1px solid #E8D6EF;background:#520079;color:#fff;border-radius:2px}
+.checkout-form input::placeholder,.checkout-form textarea::placeholder{color:#E8D6EF}
+.checkout-actions{display:flex;gap:12px;margin-top:18px}
+.checkout-actions>*{flex:1;justify-content:center;align-items:center;min-height:46px;cursor:pointer}
+.checkout-back{border:1px solid #fff;background:transparent;color:#fff}
+.checkout-review p{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid rgba(255,255,255,.2);padding:9px 0;margin:0;color:#fff}
+.checkout-review p span{opacity:.8}
+.checkout-review p strong{text-align:right;overflow-wrap:anywhere}
+.checkout-review .checkout-total{font-size:18px;border-bottom:0}
+.checkout-hint{font-size:12px;line-height:1.6;color:#fff}
+body.checkout-open{overflow:hidden}
+@media(max-width:480px){.checkout-panel{padding:28px 17px 18px}.checkout-progress span{font-size:9px}.checkout-content h2{font-size:26px}}
