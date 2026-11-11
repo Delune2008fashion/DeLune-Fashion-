@@ -57,7 +57,7 @@ async function renderProduct(){
    $(".checkout-close",overlay).onclick=close;
    overlay.addEventListener("click",e=>{if(e.target===overlay)close()});
    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!overlay.hidden)close()});
-   content.addEventListener("click",e=>{
+   content.addEventListener("click",async e=>{
     const qty=e.target.closest("[data-qty]");if(qty){quantity=Math.max(1,Math.min(99,quantity+Number(qty.dataset.qty)));paint();return}
     if(e.target.closest(".checkout-next")){step=2;paint();return}
     if(e.target.closest(".checkout-back")){step=Math.max(1,step-1);paint();return}
