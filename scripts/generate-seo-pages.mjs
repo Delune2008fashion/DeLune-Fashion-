@@ -21,7 +21,7 @@ for (const p of products) {
   const image = p.image_urls?.[0] || site + "/logo.png";
   let html = base;
   html = html.replace("<head>", '<head>\n<base href="/">');
-  html = html.replace(/<title>[\\s\\S]*?<\\/title>/i, "<title>" + esc(title) + "</title>");
+  html = html.replace(/<title>[^<]*<\\/title>/i, "<title>" + esc(title) + "</title>");
   html = html.replace(/<meta name="description" content="[^"]*">/i, '<meta name="description" content="' + esc(description) + '">');
   html = html.replace(/<link rel="canonical" href="[^"]*">/i, '<link rel="canonical" href="' + url + '">');
   html = html.replace(/<meta property="og:title" content="[^"]*">/i, '<meta property="og:title" content="' + esc(title) + '">');
