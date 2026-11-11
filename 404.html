@@ -22,6 +22,13 @@
   var clean=path;
   while(clean.length>1&&clean.endsWith("/"))clean=clean.slice(0,-1);
   var routes={"/":"/index.html","/index":"/index.html","/categories":"/categories.html","/about":"/about.html","/contact":"/contact.html","/product":"/product.html","/moderate":"/moderate.html"};
+  var productMatch=clean.match(/^\/products\/([^/]+)$/i);
+  if(productMatch){
+    var productSlug;
+    try{productSlug=decodeURIComponent(productMatch[1]);}catch(e){productSlug=productMatch[1];}
+    location.replace("https://delune.qd.je/product.html?slug="+encodeURIComponent(productSlug)+location.search+location.hash);
+    return;
+  }
   var target=routes[clean.toLowerCase()];
   if(target){
     location.replace("https://delune.qd.je"+target+location.search+location.hash);
