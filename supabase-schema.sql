@@ -68,14 +68,18 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public
-as $$
+set search_path = public, pg_temp
+as $
   select exists (
     select 1
     from public.moderators
     where user_id = auth.uid()
   );
 $$;
+
+revoke all on function public.is_delune_moderator() from public;
+revoke all on function public.is_delune_moderator() from anon;
+grant execute on function public.is_delune_moderator() to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- RLS for catalog tables. Drop named policies first so this file can be rerun.
@@ -167,7 +171,7 @@ alter table public.site_settings enable row level security;
 drop policy if exists "Public can read site settings" on public.site_settings;
 create policy "Public can read site settings"
   on public.site_settings for select
-  using (true);
+  using (key in ('hero_image_url', 'content_texts'));
 
 drop policy if exists "Moderators manage site settings" on public.site_settings;
 create policy "Moderators manage site settings"
@@ -178,10 +182,10 @@ create policy "Moderators manage site settings"
 -- Starter parent categories. Existing rows are not overwritten.
 insert into public.categories(name, slug, image_url, sort_order, parent_id)
 values
-  ('Sneakers', 'sneakers', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80', 1, null),
-  ('Hoodies', 'hoodies', 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=80', 2, null),
-  ('Jackets', 'jackets', 'https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=900&q=80', 3, null),
-  ('T-shirts', 't-shirts', 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80', 4, null),
+  ('Sneakers', 'sneakers', null, 1, null),
+  ('Hoodies', 'hoodies', null, 2, null),
+  ('Jackets', 'jackets', null, 3, null),
+  ('T-shirts', 't-shirts', null, 4, null),
   ('Perfume', 'perfume', null, 5, null)
 on conflict (slug) do nothing;
 
@@ -195,4 +199,12 @@ on conflict (slug) do nothing;
 --
 -- Storage setup: Supabase Dashboard -> Storage -> New bucket
 -- Name: product-images | Public bucket: ON
+-- Enforce a 5 MiB maximum and image-only MIME types at bucket level.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('product-images', 'product-images', true, 5242880,
+  array['image/jpeg','image/png','image/webp','image/gif'])
+on conflict (id) do update set
+  public = true,
+  file_size_limit = 5242880,
+  allowed_mime_types = array['image/jpeg','image/png','image/webp','image/gif'];
 -- ---------------------------------------------------------------------------
