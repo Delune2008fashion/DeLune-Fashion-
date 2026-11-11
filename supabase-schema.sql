@@ -121,7 +121,8 @@ create policy "Moderators manage categories"
   with check (public.is_delune_moderator());
 
 drop policy if exists "Public read available products" on public.products;
-create policy "Public read available products"
+drop policy if exists "Public read published products" on public.products;
+create policy "Public read published products"
   on public.products for select
   using (is_published = true);
 
