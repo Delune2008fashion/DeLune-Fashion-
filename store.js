@@ -21,10 +21,26 @@
     if(error) throw error; return data||[];
   }
   async function heroImage(){if(!client)return "";const {data,error}=await client.from("site_settings").select("value").eq("key","hero_image_url").maybeSingle();if(error)throw error;return data?.value||""}
-  async function product(id) {
-    if(!client) return null;
-    const {data,error}=await client.from("products").select("*").eq("id",id).single();
-    if(error) throw error; return {...data,exclusive:data.is_exclusive,available:data.is_available,images:data.image_urls||[],sizes:data.sizes||[]};
+  async function product(identifier) {
+    if (!client || !identifier) return null;
+    let data=null, error=null;
+    const isId=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(identifier));
+    if(isId){
+      const result=await client.from("products").select("*").eq("id",identifier).maybeSingle();
+      data=result.data; error=result.error;
+    }else{
+      const result=await client.from("products").select("*").eq("slug",identifier).maybeSingle();
+      data=result.data; error=result.error;
+      if(!error&&!data){
+        const fallback=await client.from("products").select("*").eq("is_published",true);
+        if(fallback.error) throw fallback.error;
+        const slugify=value=>String(value||"product").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,100)||"product";
+        data=(fallback.data||[]).find(p=>(p.slug||(`${slugify(p.name)}-${String(p.id).slice(0,8)}`))===identifier)||null;
+      }
+    }
+    if(error) throw error;
+    if(!data) return null;
+    return {...data,exclusive:data.is_exclusive,available:data.is_available,images:data.image_urls||[],sizes:data.sizes||[]};
   }
   window.DeLuneStore={client,products,categories,product,heroImage,configured:!!client,demoProducts,demoCategories};
 })();
