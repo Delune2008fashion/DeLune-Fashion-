@@ -3,7 +3,7 @@ const status=(id,msg)=>$(id).textContent=msg;
 const cfg=window.DELUNE_CONFIG||{};
 const configured=DeLuneStore.configured;
 let db=DeLuneStore.client, currentUser=null, categories=[];
-function slugify(s){return s.toLowerCase().trim().normalize("NFKD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,100)}
+function slugify(s){return s.toLowerCase().trim().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,100)}
 function seoDefaults(){const name=$("#pName").value.trim()||"Product";const desc=$("#pDescription").value.trim();const price=$("#pPrice").value? " Price: ৳"+Number($("#pPrice").value).toLocaleString("en-BD")+".":"";return {slug:slugify(name)||"product",title:name+" — DeLune",description:(desc||"Discover "+name+" at DeLune.")+price}}
 function updateSEOPreview(){const d=seoDefaults(),slug=$("#pSlug").value.trim()||d.slug,title=$("#pSeoTitle").value.trim()||d.title,description=$("#pSeoDescription").value.trim()||d.description;$("#seoPreviewTitle").textContent=title;$("#seoPreviewUrl").textContent="https://delune.qd.je/products/"+slug+"/";$("#seoPreviewDescription").textContent=description;}
 ["#pName","#pDescription","#pPrice","#pSlug","#pSeoTitle","#pSeoDescription"].forEach(sel=>$(sel)?.addEventListener("input",updateSEOPreview));
@@ -63,7 +63,7 @@ $("#productForm").addEventListener("submit",async e=>{
     const chosen=[...$("#pPhotos").files];if(chosen.length)imageUrls=imageUrls.concat(await uploadImages(chosen));
     if(id&&!imageUrls.length){const old=await db.from("products").select("image_urls").eq("id",id).single();imageUrls=old.data?.image_urls||[]}
     if(!imageUrls.length)throw new Error("Add at least one product photo or image URL.");
-    const defaults=seoDefaults();const payload={name:$("#pName").value.trim(),slug:$("#pSlug").value.trim()||defaults.slug,seo_title:$("#pSeoTitle").value.trim()||null,seo_description:$("#pSeoDescription").value.trim()||null,price:Number($("#pPrice").value),category:$("#pCategory").value,sizes:$("#pSizes").value.split(",").map(x=>x.trim()).filter(Boolean),description:$("#pDescription").value.trim(),image_urls:imageUrls,is_available:$("#pAvailable").checked,is_exclusive:$("#pExclusive").checked,updated_at:new Date().toISOString()};
+    const defaults=seoDefaults();const payload={name:$("#pName").value.trim(),slug:$("#pSlug").value.trim()||(id?defaults.slug:null),seo_title:$("#pSeoTitle").value.trim()||null,seo_description:$("#pSeoDescription").value.trim()||null,price:Number($("#pPrice").value),category:$("#pCategory").value,sizes:$("#pSizes").value.split(",").map(x=>x.trim()).filter(Boolean),description:$("#pDescription").value.trim(),image_urls:imageUrls,is_available:$("#pAvailable").checked,is_exclusive:$("#pExclusive").checked,updated_at:new Date().toISOString()};
     const res=id?await db.from("products").update(payload).eq("id",id):await db.from("products").insert({...payload,created_by:currentUser.id});
     if(res.error)throw res.error;status("#productStatus","Product saved. SEO metadata is saved; the public product URL and sitemap refresh on the next SEO deployment (usually within 10 minutes).");reset();await loadProducts();
   }catch(err){status("#productStatus",err.message||"Could not save product.")}
