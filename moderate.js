@@ -65,7 +65,7 @@ $("#productForm").addEventListener("submit",async e=>{
     if(!imageUrls.length)throw new Error("Add at least one product photo or image URL.");
     const defaults=seoDefaults();const payload={name:$("#pName").value.trim(),slug:$("#pSlug").value.trim()||(id?defaults.slug:null),seo_title:$("#pSeoTitle").value.trim()||null,seo_description:$("#pSeoDescription").value.trim()||null,price:Number($("#pPrice").value),category:$("#pCategory").value,sizes:$("#pSizes").value.split(",").map(x=>x.trim()).filter(Boolean),description:$("#pDescription").value.trim(),image_urls:imageUrls,is_available:$("#pAvailable").checked,is_published:$("#pPublished").checked,is_exclusive:$("#pExclusive").checked,updated_at:new Date().toISOString()};
     const res=id?await db.from("products").update(payload).eq("id",id):await db.from("products").insert({...payload,created_by:currentUser.id});
-    if(res.error)throw res.error;status("#productStatus","Product saved. SEO metadata is saved; the public product URL and sitemap refresh on the next SEO deployment (usually within 10 minutes).");reset();await loadProducts();
+    if(res.error)throw res.error;status("#productStatus",payload.is_published?"Product published. Its SEO page and sitemap entry refresh on the next SEO deployment (about 10 minutes).":"Product saved as a draft. It will stay out of the storefront and sitemap until published.");reset();await loadProducts();
   }catch(err){status("#productStatus",err.message||"Could not save product.")}
 });
 $("#resetProduct").onclick=reset;
