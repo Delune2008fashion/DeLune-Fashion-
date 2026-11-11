@@ -361,3 +361,20 @@ a,button{color:#fff!important}
 }
 #filters .collection-children{padding-top:6px;padding-bottom:12px}
 #filters .collection-child{border-bottom-color:rgba(255,255,255,.28)!important}
+
+/* Collection empty-state panel: match the DeLune purple palette */
+.empty-state{
+  background:#A66BC2!important;
+  background-image:none!important;
+  color:#FFFFFF!important;
+  border:1px solid #C7A5D8!important;
+  border-radius:4px;
+  box-shadow:none!important;
+}
+.empty-state *,
+.empty-state p,
+.empty-state strong,
+.empty-state em,
+.empty-state span{
+  color:#FFFFFF!important;
+}
