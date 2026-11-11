@@ -19,3 +19,12 @@ $$;
 drop trigger if exists products_set_slug on public.products;
 create trigger products_set_slug before insert or update of name, slug on public.products
 for each row execute function public.set_product_slug();
+
+-- Public visitors and the SEO generator can read published products, including
+-- temporarily out-of-stock products. Drafts remain private to moderators.
+alter table public.products enable row level security;
+drop policy if exists "Public read available products" on public.products;
+drop policy if exists "Public read published products" on public.products;
+create policy "Public read published products"
+  on public.products for select
+  using (is_published = true);
