@@ -44,7 +44,7 @@ for (const p of products) {
     }
   };
   const jsonLd = JSON.stringify(structuredData).replace(/</g, "\\u003c");
-  html = html.replace("<head>", '<head>\\n<base href="/">\\n<script type="application/ld+json">' + jsonLd + '</script>');
+  html = html.replace("<head>", '<head>\n<base href="/">\n<script type="application/ld+json">' + jsonLd + '</script>');
   html = html.replace(/<title>[^<]*<\/title>/i, "<title>" + esc(title) + "</title>");
   html = html.replace(/<meta name="description" content="[^"]*">/i, '<meta name="description" content="' + esc(description) + '">');
   html = html.replace(/<link rel="canonical" href="[^"]*">/i, '<link rel="canonical" href="' + url + '">');
