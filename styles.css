@@ -317,3 +317,27 @@ a,button{color:#fff!important}
 .category-section .category-subcategories{
   background:rgba(36,21,44,.88)!important;
 }
+
+/* DeLune header identity: larger symbol + bordered wordmark */
+.site-header>a.wordmark{
+  display:flex!important;align-items:center!important;gap:13px!important;
+  width:auto!important;min-width:0!important;flex:0 0 auto!important;
+  height:100%!important;overflow:visible!important;
+}
+.site-header>a.wordmark img.delune-logo{
+  display:block!important;width:76px!important;height:76px!important;
+  max-width:none!important;object-fit:contain!important;object-position:center!important;
+}
+.site-header>a.wordmark::after{
+  content:"DeLune";display:inline-flex;align-items:center;justify-content:center;
+  padding:7px 13px;border:1px solid #520079;border-radius:2px;
+  color:#C7A5D8!important;font:600 25px/1 "Playfair Display",Georgia,serif;
+  letter-spacing:.02em;white-space:nowrap;
+}
+@media(max-width:600px){
+ .site-header{height:84px!important;min-height:84px!important}
+ .site-header>a.wordmark{gap:8px!important;width:auto!important;flex:0 0 auto!important}
+ .site-header>a.wordmark img.delune-logo{width:58px!important;height:62px!important}
+ .site-header>a.wordmark::after{font-size:19px;padding:6px 9px}
+ .site-header .header-actions{gap:2px!important}
+}
