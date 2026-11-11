@@ -280,3 +280,40 @@ a,button{color:#fff!important}
 .site-footer,footer,.footer-main,.footer-bottom,.footer-inner,.footer-content,.footer-links,.footer-newsletter{background-color:#C7A5D8!important;background-image:none!important;color:#FFFFFF!important}
 .site-footer * ,footer *{color:#FFFFFF!important}
 .site-footer a:hover,footer a:hover{color:#520079!important}
+
+/* Homepage hero image: show the complete uploaded image without cropping */
+.hero-image{
+  background-size:contain!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  background-color:#520079!important;
+  overflow:hidden;
+}
+.hero-image::after{display:none!important}
+/* Explore by category: deep plum surface with crisp white typography */
+.category-section{
+  background:#24152C!important;
+  background-image:none!important;
+  color:#FFFFFF!important;
+}
+.category-section .section-heading,
+.category-section .section-heading h2,
+.category-section .section-heading .eyebrow,
+.category-section .section-note,
+.category-section .underlined-link,
+.category-section .category-card,
+.category-section .category-card *,
+.category-section .category-toggle,
+.category-section .category-subcategories a{
+  color:#FFFFFF!important;
+}
+.category-section .category-card{
+  border-color:rgba(255,255,255,.16);
+  box-shadow:none!important;
+}
+.category-section .category-card:hover{box-shadow:none!important}
+.category-section .category-card img{filter:brightness(.78)}
+.category-section .category-toggle,
+.category-section .category-subcategories{
+  background:rgba(36,21,44,.88)!important;
+}
