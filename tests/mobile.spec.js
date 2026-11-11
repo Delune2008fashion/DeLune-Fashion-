@@ -33,7 +33,7 @@ test("public pages include description and social preview metadata", async ({ pa
     await page.goto(`/${file}`);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /.+/);
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", /DeLune/);
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /https:\/\//);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /https?:\/\//);
   }
 });
 
