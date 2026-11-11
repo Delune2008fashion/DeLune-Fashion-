@@ -6,7 +6,7 @@ const api = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_ANON_KEY;
 if (!api || !key) throw new Error("Set SUPABASE_URL and SUPABASE_ANON_KEY repository secrets.");
 const headers = { apikey: key, Authorization: "Bearer " + key };
-const response = await fetch(api + "/rest/v1/products?select=id,name,description,price,category,image_urls,slug,seo_title,seo_description,is_available&is_available=eq.true&order=created_at.desc", { headers });
+const response = await fetch(api + "/rest/v1/products?select=id,name,description,price,category,image_urls,slug,seo_title,seo_description,is_available,is_published&is_published=eq.true&order=created_at.desc", { headers });
 if (!response.ok) throw new Error("Supabase product fetch failed: " + response.status + " " + await response.text());
 const products = await response.json();
 const base = await fs.readFile("product.html", "utf8");
