@@ -13,18 +13,18 @@
   var host=location.hostname.toLowerCase();
   var path=location.pathname;
   var legacyHost=host==="fahad09belal.github.io";
-  path=path.replace(/^\\/DeLune-Fashion-(?=\\/|$)/i,"");
+  var prefix="/DeLune-Fashion-";
+  if(path.toLowerCase().startsWith(prefix.toLowerCase()))path=path.slice(prefix.length);
   if(!path)path="/";
-  var clean=path.replace(/\\/+$/,"")||"/";
+  var clean=path;
+  while(clean.length>1&&clean.endsWith("/"))clean=clean.slice(0,-1);
   var routes={"/":"/index.html","/index":"/index.html","/categories":"/categories.html","/about":"/about.html","/contact":"/contact.html","/product":"/product.html","/moderate":"/moderate.html"};
   var target=routes[clean.toLowerCase()];
   if(target){
     location.replace("https://delune.qd.je"+target+location.search+location.hash);
     return;
   }
-  if(legacyHost && /\\.html$/i.test(clean)){
-    location.replace("https://delune.qd.je"+clean+location.search+location.hash);
-  }
+  if(legacyHost&&clean.toLowerCase().endsWith(".html"))location.replace("https://delune.qd.je"+clean+location.search+location.hash);
 })();
 </script>
 </head>
