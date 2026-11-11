@@ -145,3 +145,46 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
  .site-header .header-actions{gap:2px!important}
  .icon-button{width:34px;height:38px}
 }
+
+
+/* DeLune motion polish: editorial entrances, staggered collections and tactile controls */
+.hero-copy{animation:deLuneHeroCopy .8s var(--ease-luxe) both}
+.hero-copy .eyebrow{animation:deLuneHeroCopy .65s .06s var(--ease-luxe) both}
+.hero-copy h1{animation:deLuneHeroCopy .8s .12s var(--ease-luxe) both}
+.hero-copy .hero-description{animation:deLuneHeroCopy .8s .2s var(--ease-luxe) both}
+.hero-copy .button{animation:deLuneHeroCopy .8s .28s var(--ease-luxe) both}
+.hero-image{transform-origin:center;animation:deLuneHeroImage 1.15s var(--ease-luxe) both;overflow:hidden}
+.hero-image::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 25%,#ffffff24 48%,transparent 68%);transform:translateX(-130%);animation:deLuneSheen 1.3s .45s var(--ease-luxe) both}
+.intro-strip span{animation:deLuneFade .7s .25s both}
+.product-card:nth-child(4n+1){animation-delay:.04s}
+.product-card:nth-child(4n+2){animation-delay:.1s}
+.product-card:nth-child(4n+3){animation-delay:.16s}
+.product-card:nth-child(4n+4){animation-delay:.22s}
+.category-card:nth-child(4n+1){animation-delay:.04s}
+.category-card:nth-child(4n+2){animation-delay:.12s}
+.category-card:nth-child(4n+3){animation-delay:.2s}
+.category-card:nth-child(4n+4){animation-delay:.28s}
+.product-photo img{will-change:transform}
+.product-card:hover .product-photo img,.category-card:hover>img{transform:scale(1.055)}
+.category-card>img{transition:transform .9s var(--ease-luxe),filter .6s ease}
+.category-card:hover>img{filter:brightness(.9)}
+.menu-panel{opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .22s ease,transform .22s var(--ease-luxe),visibility .22s}
+.menu-panel.open{opacity:1;visibility:visible;transform:translateY(0)}
+.search-bar{transform:translateY(-8px);opacity:0;transition:opacity .25s ease,transform .25s var(--ease-luxe)}
+.search-bar.open{transform:translateY(0);opacity:1}
+button:active,.button:active,.filter-btn:active,.size-choice:active{transform:scale(.97)}
+.gallery-arrow:hover{background:#281923;color:#fff8fa;transform:translateY(-50%) scale(1.06)}
+.gallery-thumb{transition:border-color .2s ease,transform .2s var(--ease-luxe);cursor:pointer}
+.gallery-thumb:hover{transform:translateY(-3px)}
+.page-heading{animation:deLuneHeroCopy .7s var(--ease-luxe) both}
+.detail-copy{animation:deLuneHeroCopy .7s .12s var(--ease-luxe) both}
+.brand-note h2{animation:deLuneFade .9s .12s both}
+.site-footer{animation:deLuneFade .7s both}
+@keyframes deLuneHeroCopy{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes deLuneHeroImage{from{opacity:.45;transform:scale(1.035)}to{opacity:1;transform:scale(1)}}
+@keyframes deLuneSheen{to{transform:translateX(130%)}}
+@keyframes deLuneFade{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+ .hero-copy,.hero-copy .eyebrow,.hero-copy h1,.hero-copy .hero-description,.hero-copy .button,.hero-image,.hero-image::after,.intro-strip span,.product-card,.category-card,.page-heading,.detail-copy,.brand-note h2,.site-footer{animation:none!important}
+ .menu-panel,.search-bar{transform:none!important;transition:none!important}
+}
