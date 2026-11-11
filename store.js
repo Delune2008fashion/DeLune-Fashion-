@@ -7,7 +7,7 @@
   const demoCategories = [];
   async function products(filters={}) {
     if (!client) return [];
-    let q=client.from("products").select("*").order("created_at",{ascending:false});
+    let q=client.from("products").select("*").eq("is_published",true).order("created_at",{ascending:false});
     if(filters.category) q=q.eq("category",filters.category);
     if(filters.exclusive) q=q.eq("is_exclusive",true);
     if(filters.availableOnly!==false) q=q.eq("is_available",true);
