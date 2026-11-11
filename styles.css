@@ -261,3 +261,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 :root{--ivory:#A66BC2}
 body{background:#A66BC2!important}
 .site-header,.menu-panel,.search-bar,.hero,.page-shell{background:#A66BC2!important}
+
+/* High-contrast white typography for the purple theme */
+body,body *{color:#fff!important}
+body{background:#A66BC2!important}
+.site-header,.menu-panel,.search-bar,.hero,.page-shell,.category-section,.site-footer{background-color:#A66BC2!important}
+.announcement,.brand-note,.button-dark,.filter-btn.active,.filter-btn:hover,.whatsapp-button{color:#fff!important}
+.product-card,.product-info,.product-details,.category-card,.admin-card,.admin-item,.seo-preview,.field,.form-card,.search-results,.menu-panel,.size-choice,.filter-btn,.admin-nav button,.admin-button.secondary{background-color:#71309A!important;color:#fff!important}
+input,textarea,select{background:#520079!important;color:#fff!important;border-color:#E9DDF0!important}
+input::placeholder,textarea::placeholder{color:#E9DDF0!important;opacity:1}
+input:disabled,textarea:disabled,select:disabled{color:#E9DDF0!important}
+label,small,.status,.section-intro,.eyebrow,.admin-nav button span{color:#fff!important}
+a,button{color:#fff!important}
+.admin-button.secondary,.filter-btn{border-color:#E9DDF0!important}
+.admin-item{border-color:#E9DDF0!important}
