@@ -14,6 +14,7 @@ const esc = value => String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt
 const slugify = value => String(value || "product").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,100);
 const urls = new Set();
 await fs.rm("products", { recursive: true, force: true });
+await fs.mkdir("products", { recursive: true });
 for (const p of products) {
   const slug = p.slug || (slugify(p.name) + "-" + p.id.slice(0,8));
   const url = site + "/products/" + encodeURIComponent(slug) + "/";
