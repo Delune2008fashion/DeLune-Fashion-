@@ -1,3 +1,6 @@
+
+function activateAdminTab(name){document.querySelectorAll("[data-admin-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.adminTab===name)));document.querySelectorAll("[data-admin-pane]").forEach(p=>p.classList.toggle("active",p.dataset.adminPane===name));}
+document.querySelectorAll("[data-admin-tab]").forEach(b=>b.addEventListener("click",()=>activateAdminTab(b.dataset.adminTab)));
 const $=s=>document.querySelector(s), money=n=>"৳"+Number(n||0).toLocaleString("en-BD");
 const status=(id,msg)=>$(id).textContent=msg;
 const cfg=window.DELUNE_CONFIG||{};
@@ -29,13 +32,13 @@ function updateSEOPreview(){const d=seoDefaults(),id=$("#productId").value.trim(
 ["#pName","#pDescription","#pPrice","#pSeoTitle","#pSeoDescription"].forEach(sel=>$(sel)?.addEventListener("input",updateSEOPreview));
 async function loadCategories(){
   categories=await DeLuneStore.categories();
-  $("#pCategory").innerHTML=categories.map(c=>`<option value="${c.slug}">${c.parent_id?"↳ ":""}${c.name}</option>`).join("");
+  $("#pCategory").innerHTML=`<option value="uncategorized">Uncategorized (moderator only)</option>`+categories.map(c=>`<option value="${c.slug}">${c.parent_id?"↳ ":""}${c.name}</option>`).join("");
   const parent=$("#cParent");if(parent)parent.innerHTML=`<option value="">Top-level category</option>`+categories.filter(c=>!c.parent_id).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
   $("#adminCategories").innerHTML=categories.map(c=>`<div class="admin-item"><div><strong>${c.name}</strong><small>${c.slug}${c.image_url?" · Cover image set":""}</small></div><div class="admin-actions"><button class="admin-button secondary" data-edit-category="${c.id}">Edit</button><button class="admin-button secondary" data-delete-category="${c.id||c.slug}">Delete</button></div></div>`).join("");
 }
 async function loadProducts(){
   const ps=await DeLuneStore.products({availableOnly:false});
-  $("#adminProducts").innerHTML=ps.map(p=>`<div class="admin-item"><div><strong>${p.name}</strong><small>${money(p.price)} · ${p.category} · ${p.available?"In stock":"Out of stock"} · ${p.is_published?"Published":"Draft"}</small></div><div class="admin-actions"><button class="admin-button secondary" data-edit="${p.id}">Edit</button><button class="admin-button secondary" data-delete="${p.id}">Delete</button></div></div>`).join("")||"No products yet.";
+  $("#adminProducts").innerHTML=ps.map(p=>`<div class="admin-item"><div><strong>${p.name}</strong><small>${money(p.price)} · ${p.category==="uncategorized"?"Uncategorized (moderator only)":p.category} · ${p.available?"In stock":"Out of stock"} · ${p.is_published?"Published":"Draft"}</small></div><div class="admin-actions"><button class="admin-button secondary" data-edit="${p.id}">Edit</button><button class="admin-button secondary" data-delete="${p.id}">Delete</button></div></div>`).join("")||"No products yet.";
 }
 async function refresh(){await Promise.all([loadCategories(),loadProducts(),loadSeoKeywordLibrary()]);await fetchPageTexts();await renderTextFields()}
 const PAGE_TEXT_FIELDS={"index":[[".announcement","Announcement bar"],[".hero-copy .eyebrow","Hero eyebrow"],[".hero-copy h1","Hero heading"],[".hero-description","Hero description"],[".hero-copy .button-dark","Hero button"],[".intro-strip span:nth-child(1)","Intro line 1"],[".intro-strip span:nth-child(2)","Intro line 2"],[".intro-strip span:nth-child(3)","Intro line 3"],[".exclusive-section .section-heading .eyebrow","Exclusive eyebrow"],[".exclusive-section .section-heading h2","Exclusive heading"],[".exclusive-section .section-heading .underlined-link","View products label"],[".category-section .section-heading .eyebrow","Category eyebrow"],[".category-section .section-heading h2","Category heading"],[".category-section .section-note","Category description"],[".brand-note .eyebrow","Brand note eyebrow"],[".brand-note h2","Brand note heading"],[".brand-note .underlined-link","Brand note link"]],"categories":[[".announcement","Announcement bar"],[".page-heading .eyebrow","Page eyebrow"],[".page-heading h1","Page heading"],[".page-heading p","Page description"]],"about":[[".announcement","Announcement bar"],[".page-heading .eyebrow","Page eyebrow"],[".page-heading h1","Page heading"],[".about-content","About description"]],"contact":[[".announcement","Announcement bar"],[".page-heading .eyebrow","Page eyebrow"],[".page-heading h1","Page heading"],[".page-heading p","Page description"],[".contact-card h2","Contact heading"],[".contact-card p:nth-of-type(1)","Contact description"],[".contact-card a[href^='https://m.me']","Messenger button label"]]};
@@ -116,8 +119,11 @@ $("#adminCategories").addEventListener("click",async e=>{
   if(edit){const c=categories.find(x=>String(x.id)===edit.dataset.editCategory);if(!c)return;
    $("#cId").value=c.id;$("#cName").value=c.name;$("#cSlug").value=c.slug;$("#cParent").value=c.parent_id||"";$("#cImage").value=c.image_url||"";$("#saveCategoryBtn").textContent="Update category";window.scrollTo({top:$("#categoryForm").getBoundingClientRect().top+window.scrollY-90,behavior:"smooth"});return;
   }
-  if(!del||!confirm("Delete this category? Products using it should be reassigned first."))return;
-  const {error}=await db.from("categories").delete().eq("id",del.dataset.deleteCategory);status("#categoryStatus",error?.message||"Category deleted.");await loadCategories();
+  if(!del||!confirm("Delete this category? Its products will be kept and moved to the moderator-only Uncategorized group."))return;
+  const category=categories.find(c=>String(c.id)===del.dataset.deleteCategory||c.slug===del.dataset.deleteCategory);if(!category)return;
+  const {error:moveError}=await db.from("products").update({category:"uncategorized",updated_at:new Date().toISOString()}).eq("category",category.slug);
+  if(moveError){status("#categoryStatus","Could not move products out of this category: "+moveError.message);return;}
+  const {error}=await db.from("categories").delete().eq("id",category.id);status("#categoryStatus",error?.message||"Category deleted. Products were preserved under Uncategorized.");await Promise.all([loadCategories(),loadProducts()]);
 });
 $("#bannerForm").addEventListener("submit",async e=>{
  e.preventDefault();try{
