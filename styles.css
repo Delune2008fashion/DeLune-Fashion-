@@ -210,3 +210,49 @@ body.is-leaving{opacity:0;transition:opacity .22s ease}
  .gallery-stage .detail-image,.gallery-stage .detail-image.gallery-changing{opacity:1!important;transform:none!important;transition:none!important}
  .menu-panel.open{animation:none!important}
 }
+
+/* DeLune Royal Purple identity */
+:root{--ink:#24102f;--paper:#F0E8F5;--ivory:#FBF8FD;--sand:#C7A9D8;--muted:#75627F;--line:#E2D5EA;--brand:#520079;--brand-deep:#310047;--brand-mid:#71309A;--brand-soft:#A66BC2;--brand-pale:#E9DDF0;--brand-wash:#F7F1FA;--brand-shadow:rgba(82,0,121,.16)}
+body{background:var(--ivory);color:var(--ink)}
+.announcement{background:linear-gradient(105deg,#310047 0%,#520079 55%,#71309A 100%);color:#fff}
+.site-header,.menu-panel,.search-bar,.hero,.page-shell{background:var(--ivory)}
+.wordmark span,.hero h1 em,h2 em{color:var(--brand-mid)}
+.hero-image,.product-photo,.blank-image,.category-card{background:linear-gradient(145deg,#E9DDF0,#C7A9D8)}
+.button-dark,.filter-btn.active,.filter-btn:hover,.whatsapp-button{background:linear-gradient(115deg,#310047 0%,#520079 58%,#71309A 100%);color:#fff;border-color:#520079;box-shadow:0 8px 22px rgba(82,0,121,.18)}
+.category-section,.site-footer{background:linear-gradient(135deg,#F0E8F5 0%,#F7F1FA 55%,#E9DDF0 100%)}
+.brand-note{background:linear-gradient(125deg,#310047 0%,#520079 55%,#71309A 100%);color:#fff}
+.brand-note .eyebrow{color:#E9DDF0}
+.light-link{color:#fff;border-color:#C7A9D8}
+.filter-btn{border-color:var(--line);color:var(--ink)}
+.filter-btn.active,.filter-btn:hover{color:#fff}
+.size-chip{border-color:var(--line)}
+.size-choice{border-color:#C7A9D8;background:#FBF8FD;color:#310047}
+.size-choice.selected{background:#520079;color:#fff;border-color:#520079}
+.gallery-arrow{color:#520079;box-shadow:0 4px 16px rgba(49,0,71,.16)}
+.gallery-thumb.active{border-color:#520079}
+.underlined-link{border-color:#A66BC2}
+.creator-credit{border-color:#D6C2E2}
+.creator-credit p strong{color:#520079}
+.froyo-credit-link,.footer-credit-link{color:#71309A}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #71309A;outline-offset:3px}
+.category-card:hover{box-shadow:0 16px 34px rgba(82,0,121,.16)}
+#filters .collection-parent{background:#FBF8FD;color:#310047}
+#filters .collection-parent[aria-expanded="true"]{background:#E9DDF0}
+#filters .collection-children{background:#F7F1FA}
+#filters .collection-child{border-color:#E2D5EA;color:#310047}
+#filters .collection-child.active{background:#520079;color:#fff}
+.file-upload-label{background:linear-gradient(115deg,#310047,#520079);color:#fff!important}
+#cImageFile,#bannerFile{border-color:#C7A9D8}
+#cImageFile::file-selector-button,#bannerFile::file-selector-button{background:#E9DDF0;color:#310047}
+.admin-wrap{background:linear-gradient(145deg,#F7F1FA,#E9DDF0)}
+.admin-card{background:#FBF8FD;border-color:#E2D5EA;box-shadow:0 8px 26px rgba(82,0,121,.055)}
+.admin-button{background:linear-gradient(115deg,#310047,#520079 65%,#71309A);color:#fff;box-shadow:0 5px 15px rgba(82,0,121,.14)}
+.admin-button.secondary{background:#FBF8FD;color:#520079;border-color:#C7A9D8;box-shadow:none}
+.admin-item{border-color:#E2D5EA;background:#fff}
+.admin-nav button{background:#FBF8FD;border-color:#E2D5EA;color:#310047}
+.admin-nav button[aria-selected="true"]{background:linear-gradient(115deg,#310047,#520079 65%,#71309A);color:#fff;border-color:#520079;box-shadow:0 7px 18px rgba(82,0,121,.18)}
+.admin-nav button[aria-selected="true"] span{color:#E9DDF0}
+.admin-subnav .admin-button{background:linear-gradient(115deg,#310047,#520079 65%,#71309A)}
+.admin-subnav .admin-button.secondary{background:#FBF8FD;color:#520079;border-color:#C7A9D8}
+.seo-preview{border-color:#D6C2E2;background:#FBF8FD}
+.status{color:#75627F}
