@@ -341,3 +341,23 @@ a,button{color:#fff!important}
  .site-header>a.wordmark::after{font-size:19px;padding:6px 9px}
  .site-header .header-actions{gap:2px!important}
 }
+
+/* Category page filter boxes: lavender-purple with readable white labels */
+#filters>.filter-btn[data-category=""],
+#filters .collection-parent,
+#filters .collection-children,
+#filters .collection-child,
+#filters .collection-child.active{
+  background:#A66BC2!important;
+  color:#FFFFFF!important;
+  border-color:#C7A5D8!important;
+}
+#filters .collection-parent[aria-expanded="true"]{
+  background:#A66BC2!important;color:#FFFFFF!important;
+}
+#filters .collection-child:hover,
+#filters .collection-parent:hover{
+  background:#8E4EAC!important;color:#FFFFFF!important;
+}
+#filters .collection-children{padding-top:6px;padding-bottom:12px}
+#filters .collection-child{border-bottom-color:rgba(255,255,255,.28)!important}
