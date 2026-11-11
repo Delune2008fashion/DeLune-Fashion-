@@ -10,6 +10,9 @@ on:
       - "app.js"
       - "store.js"
       - "scripts/generate-seo-pages.mjs"
+      - "moderate.html"
+      - "moderate.js"
+      - ".github/workflows/product-seo.yml"
 permissions:
   contents: write
 concurrency:
