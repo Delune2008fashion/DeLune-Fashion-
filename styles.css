@@ -100,3 +100,41 @@ body{background:#FADDE7;color:#281923}.announcement,.brand-note{background:#F0BF
 
 /* No stock photography: keep empty image slots as clean powder-pink placeholders */
 .blank-image{display:block;width:100%;height:100%;min-height:160px;background:#F7D5E1}.product-photo .blank-image{height:100%;min-height:0}.category-card .category-blank{position:absolute;inset:0}.detail-image.blank-image{min-height:320px;max-height:650px}
+
+
+/* DeLune refinement: motion, feedback, accessibility and small-screen fit */
+:root{--ease-luxe:cubic-bezier(.2,.75,.25,1)}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+a,button,.product-card,.category-card,.filter-btn,.size-choice,.admin-button{transition:color .22s var(--ease-luxe),background-color .22s var(--ease-luxe),border-color .22s var(--ease-luxe),opacity .22s var(--ease-luxe),transform .28s var(--ease-luxe),box-shadow .28s var(--ease-luxe)}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #9e456b;outline-offset:3px}
+.product-card,.category-card,.collection-accordion,.admin-card{animation:deLuneRise .55s var(--ease-luxe) both}
+.product-card:hover{transform:translateY(-4px)}
+.category-card:hover{box-shadow:0 16px 34px #6b344018}
+.button-dark:hover,.admin-button:not(.secondary):hover{transform:translateY(-2px);box-shadow:0 9px 22px #28192320}
+.loading-state{position:relative;overflow:hidden;border-radius:4px;background:linear-gradient(90deg,#f7d5e1 25%,#fce8ee 45%,#f7d5e1 65%);background-size:220% 100%;animation:deLuneShimmer 1.45s ease-in-out infinite;color:#806371;min-height:100px;display:grid;place-items:center}
+.empty-state,.error-state{padding:34px 18px;text-align:center;color:#806371;background:#fff8fa;border:1px solid #ebc5d3;border-radius:4px}
+.error-state button{margin:14px auto 0;display:block;border:1px solid #d8aabd;background:#fff8fa;padding:10px 16px;color:#281923;cursor:pointer}
+.product-photo img,.category-card img,.detail-image{transition:opacity .35s ease,transform .65s var(--ease-luxe)}
+.order-buttons a[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.admin-button:disabled,button:disabled{opacity:.55;cursor:wait}
+.status[role="status"]{min-height:1.4em}
+@keyframes deLuneRise{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+@keyframes deLuneShimmer{0%{background-position:100% 0}100%{background-position:-120% 0}}
+@media(max-width:600px){
+ .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 10px}
+ .product-photo{height:clamp(165px,53vw,245px)}
+ .category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .category-card{height:clamp(190px,58vw,250px)}
+ .product-detail{grid-template-columns:minmax(0,1fr);gap:8px}
+ .gallery-stage .detail-image{max-height:68vh;object-fit:contain}
+ .gallery-arrow{width:38px;height:38px}
+ .detail-copy h1{font-size:clamp(32px,9vw,40px)}
+ .order-buttons{display:grid;grid-template-columns:1fr}
+ .order-buttons .whatsapp-button{width:100%;min-height:48px}
+ .page-shell{padding-left:5%;padding-right:5%}
+ .site-footer{padding-left:5%;padding-right:5%}
+ .admin-item{align-items:flex-start;flex-direction:column}
+ .admin-actions{width:100%}
+ .admin-actions button{flex:1;min-height:42px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
