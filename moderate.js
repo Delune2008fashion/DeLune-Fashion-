@@ -25,8 +25,8 @@ $("#resetSeoKeywordLibrary").addEventListener("click",()=>{$("#seoKeywordLines")
 $("#suggestSeoKeywords").addEventListener("click",suggestProductKeywords);
 
 function seoDefaults(){const name=$("#pName").value.trim()||"Product";const desc=$("#pDescription").value.trim();const price=$("#pPrice").value? " Price: ৳"+Number($("#pPrice").value).toLocaleString("en-BD")+".":"";return {slug:slugify(name)||"product",title:name+" — DeLune",description:(desc||"Discover "+name+" at DeLune.")+price}}
-function updateSEOPreview(){const d=seoDefaults(),slug=$("#pSlug").value.trim()||d.slug,title=$("#pSeoTitle").value.trim()||d.title,description=$("#pSeoDescription").value.trim()||d.description;$("#seoPreviewTitle").textContent=title;$("#seoPreviewUrl").textContent="https://delune.qd.je/products/"+slug+"/";$("#seoPreviewDescription").textContent=description;}
-["#pName","#pDescription","#pPrice","#pSlug","#pSeoTitle","#pSeoDescription"].forEach(sel=>$(sel)?.addEventListener("input",updateSEOPreview));
+function updateSEOPreview(){const d=seoDefaults(),id=$("#productId").value.trim(),slug=d.slug+(id?"-"+id.slice(0,8):"-auto"),title=$("#pSeoTitle").value.trim()||d.title,description=$("#pSeoDescription").value.trim()||d.description;$("#seoPreviewTitle").textContent=title;$("#seoPreviewUrl").textContent="https://delune.qd.je/products/"+slug+"/";$("#seoPreviewDescription").textContent=description;}
+["#pName","#pDescription","#pPrice","#pSeoTitle","#pSeoDescription"].forEach(sel=>$(sel)?.addEventListener("input",updateSEOPreview));
 async function loadCategories(){
   categories=await DeLuneStore.categories();
   $("#pCategory").innerHTML=categories.map(c=>`<option value="${c.slug}">${c.parent_id?"↳ ":""}${c.name}</option>`).join("");
@@ -46,7 +46,7 @@ $("#textPage").addEventListener("change",renderTextFields);
 $("#savePageTexts").addEventListener("click",async()=>{try{const next={...savedPageTexts};$("#textFields").querySelectorAll("[data-page-text-key]").forEach(el=>next[el.dataset.pageTextKey]=el.value);const {error}=await db.from("site_settings").upsert({key:"content_texts",value:JSON.stringify(next),updated_at:new Date().toISOString(),updated_by:currentUser.id},{onConflict:"key"});if(error)throw error;savedPageTexts=next;status("#pageTextStatus","Visible page texts saved successfully.");}catch(e){status("#pageTextStatus",e.message||"Could not save page texts.")}});
 $("#resetPageTexts").addEventListener("click",async()=>{try{await fetchPageTexts();await renderTextFields();status("#pageTextStatus","Saved text values reloaded.")}catch(e){status("#pageTextStatus",e.message)}});
 
-function reset(){ $("#productForm").reset();$("#productId").value="";$("#productFormTitle").textContent="Add a product";$("#pAvailable").checked=true;$("#pPublished").checked=true;$("#pSlug").value="";$("#pSeoTitle").value="";$("#pSeoDescription").value="";$("#pSeoKeywords").value="";updateSEOPreview(); }
+function reset(){ $("#productForm").reset();$("#productId").value="";$("#productFormTitle").textContent="Add a product";$("#pAvailable").checked=true;$("#pPublished").checked=true;$("#pSeoTitle").value="";$("#pSeoDescription").value="";$("#pSeoKeywords").value="";updateSEOPreview(); }
 async function uploadImages(files){
   if(files.length>8)throw new Error("Choose no more than 8 images at once.");
   const urls=[];for(const file of files){
@@ -83,7 +83,7 @@ $("#productForm").addEventListener("submit",async e=>{
     const chosen=[...$("#pPhotos").files];if(chosen.length)imageUrls=imageUrls.concat(await uploadImages(chosen));
     if(id&&!imageUrls.length){const old=await db.from("products").select("image_urls").eq("id",id).single();imageUrls=old.data?.image_urls||[]}
     if(!imageUrls.length)throw new Error("Add at least one product photo or image URL.");
-    const defaults=seoDefaults();const payload={name:$("#pName").value.trim(),slug:$("#pSlug").value.trim()||(id?defaults.slug:null),seo_title:$("#pSeoTitle").value.trim()||null,seo_description:$("#pSeoDescription").value.trim()||null,seo_keywords:$("#pSeoKeywords").value.trim(),price:Number($("#pPrice").value),category:$("#pCategory").value,sizes:$("#pSizes").value.split(",").map(x=>x.trim()).filter(Boolean),description:$("#pDescription").value.trim(),image_urls:imageUrls,is_available:$("#pAvailable").checked,is_published:$("#pPublished").checked,is_exclusive:$("#pExclusive").checked,updated_at:new Date().toISOString()};
+    const defaults=seoDefaults();const payload={name:$("#pName").value.trim(),seo_title:$("#pSeoTitle").value.trim()||null,seo_description:$("#pSeoDescription").value.trim()||null,seo_keywords:$("#pSeoKeywords").value.trim(),price:Number($("#pPrice").value),category:$("#pCategory").value,sizes:$("#pSizes").value.split(",").map(x=>x.trim()).filter(Boolean),description:$("#pDescription").value.trim(),image_urls:imageUrls,is_available:$("#pAvailable").checked,is_published:$("#pPublished").checked,is_exclusive:$("#pExclusive").checked,updated_at:new Date().toISOString()};
     const res=id?await db.from("products").update(payload).eq("id",id):await db.from("products").insert({...payload,created_by:currentUser.id});
     if(res.error)throw res.error;status("#productStatus",payload.is_published?"Product published. Its SEO page and sitemap entry refresh on the next SEO deployment (about 10 minutes).":"Product saved as a draft. It will stay out of the storefront and sitemap until published.");reset();await loadProducts();
   }catch(err){status("#productStatus",err.message||"Could not save product.")}
@@ -92,7 +92,7 @@ $("#resetProduct").onclick=reset;
 $("#adminProducts").addEventListener("click",async e=>{
   const edit=e.target.closest("[data-edit]"),del=e.target.closest("[data-delete]");
   if(edit){const {data,error}=await db.from("products").select("*").eq("id",edit.dataset.edit).single();if(error){status("#productStatus",error.message);return}
-    $("#productId").value=data.id;$("#pName").value=data.name;$("#pSlug").value=data.slug||slugify(data.name);$("#pSeoTitle").value=data.seo_title||"";$("#pSeoDescription").value=data.seo_description||"";$("#pSeoKeywords").value=data.seo_keywords||"";$("#pPrice").value=data.price;$("#pCategory").value=data.category;$("#pSizes").value=(data.sizes||[]).join(", ");$("#pDescription").value=data.description;$("#pImageUrls").value=(data.image_urls||[]).join("\n");$("#pAvailable").checked=data.is_available;$("#pPublished").checked=data.is_published!==false;$("#pExclusive").checked=data.is_exclusive;$("#productFormTitle").textContent="Edit product";updateSEOPreview();window.scrollTo({top:0,behavior:"smooth"});
+    $("#productId").value=data.id;$("#pName").value=data.name;$("#pSeoTitle").value=data.seo_title||"";$("#pSeoDescription").value=data.seo_description||"";$("#pSeoKeywords").value=data.seo_keywords||"";$("#pPrice").value=data.price;$("#pCategory").value=data.category;$("#pSizes").value=(data.sizes||[]).join(", ");$("#pDescription").value=data.description;$("#pImageUrls").value=(data.image_urls||[]).join("\n");$("#pAvailable").checked=data.is_available;$("#pPublished").checked=data.is_published!==false;$("#pExclusive").checked=data.is_exclusive;$("#productFormTitle").textContent="Edit product";updateSEOPreview();window.scrollTo({top:0,behavior:"smooth"});
   }
   if(del&&confirm("Delete this product?")){const {error}=await db.from("products").delete().eq("id",del.dataset.delete);status("#productStatus",error?.message||"Product deleted.");await loadProducts()}
 });
