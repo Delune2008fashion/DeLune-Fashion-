@@ -40,6 +40,7 @@ create table if not exists public.products (
   sizes text[] not null default '{}',
   image_urls text[] not null default '{}',
   is_available boolean not null default true,
+  is_published boolean not null default true,
   is_exclusive boolean not null default false,
   created_by uuid references auth.users(id),
   created_at timestamptz not null default now(),
@@ -50,6 +51,7 @@ create table if not exists public.products (
 alter table public.products add column if not exists sizes text[] not null default '{}';
 alter table public.products add column if not exists image_urls text[] not null default '{}';
 alter table public.products add column if not exists is_available boolean not null default true;
+alter table public.products add column if not exists is_published boolean not null default true;
 alter table public.products add column if not exists is_exclusive boolean not null default false;
 alter table public.products add column if not exists updated_at timestamptz not null default now();
 alter table public.products add column if not exists slug text;
@@ -121,7 +123,7 @@ create policy "Moderators manage categories"
 drop policy if exists "Public read available products" on public.products;
 create policy "Public read available products"
   on public.products for select
-  using (is_available = true);
+  using (is_published = true);
 
 drop policy if exists "Moderators manage products" on public.products;
 create policy "Moderators manage products"
