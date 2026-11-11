@@ -138,3 +138,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
  .admin-actions button{flex:1;min-height:42px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+@media(max-width:360px){
+ .site-header>a.wordmark{width:190px!important;flex:0 0 190px!important}
+ .site-header>a.wordmark img.delune-logo{width:190px!important;height:78px!important}
+ .site-header .header-actions{gap:2px!important}
+ .icon-button{width:34px;height:38px}
+}
