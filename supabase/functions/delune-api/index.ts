@@ -11,6 +11,18 @@ Deno.serve(async(req)=>{
  const getActor=async()=>{const {data:{user}}=await db.auth.getUser(bearer);if(!user)throw new Error("Authentication required");const {data:r}=await db.from("user_roles").select("role").eq("user_id",user.id).maybeSingle();return {user,role:r?.role||""}};
  const requireCreator=async()=>{const a=await getActor();if(a.role!=="site_creator")throw new Error("Site Creator permission required");return a};
  try{
+  if(action==="create-cart-order"){
+   const name=String(body.customer_name||"").trim(),phone=String(body.customer_phone||"").trim(),address=String(body.delivery_address||"").trim(),district=String(body.district||"").trim(),txn=String(body.transaction_id||"").trim(),provider=String(body.provider||""),items=body.items;
+   if(!name||!phone||!address||!district||!txn||!Array.isArray(items)||!items.length)throw new Error("Complete all required checkout fields.");
+   if(name.length>100||phone.length>25||address.length>500||txn.length>100||items.length>20)throw new Error("One or more fields are invalid or too long.");
+   if(!["bkash","nagad"].includes(provider))throw new Error("Select a valid payment method.");
+   const {data:settings,error:se}=await db.from("site_settings").select("key,value").in("key",["bkash_number","nagad_number"]);if(se)throw se;
+   const vals=Object.fromEntries((settings||[]).map(x=>[x.key,x.value]));
+   if(!String(vals[provider+"_number"]||"").trim())throw new Error("This payment method is not configured yet.");
+   const {data,error}=await db.rpc("create_delune_cart_order",{p_customer_name:name,p_customer_phone:phone,p_delivery_address:address,p_district:district,p_items:items,p_provider:provider,p_transaction_id:txn});
+   if(error){if((error.message||"").includes("DUPLICATE_TRANSACTION_ID")||(error.message||"").toLowerCase().includes("unique"))throw new Error("DUPLICATE_TRANSACTION_ID");throw error}
+   const row=Array.isArray(data)?data[0]:data;return out({success:true,order_id:row.order_id,order_code:row.order_code,delivery_charge:row.delivery_charge,product_subtotal:row.product_subtotal,total_quantity:row.total_quantity});
+  }
   if(action==="create-order"){
    const name=String(body.customer_name||"").trim(),phone=String(body.customer_phone||"").trim(),address=String(body.delivery_address||"").trim(),txn=String(body.transaction_id||"").trim(),provider=String(body.provider||"");
    if(!name||!phone||!address||!body.product_id||!txn)throw new Error("Complete all required fields.");
