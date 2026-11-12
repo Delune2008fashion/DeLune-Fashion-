@@ -23,6 +23,17 @@ input::placeholder,textarea::placeholder{color:#E9DDF0!important;opacity:1}
 /* Moderator footer lavender */
 .site-footer,footer{background:#C7A5D8!important;background-image:none!important;color:#FFFFFF!important}
 .site-footer *,footer *{color:#FFFFFF!important}
+
+/* Restore Google-like SEO preview contrast after global moderator theme */
+.seo-google-preview,.seo-google-preview *{color:initial!important}
+.seo-google-preview{background:#fff!important;color:#202124!important;border:1px solid #dadce0!important;border-radius:10px!important;box-shadow:0 1px 3px rgba(60,64,67,.12);padding:16px!important}
+.seo-google-preview small{color:#5f6368!important;font:12px Arial,sans-serif!important}
+.seo-google-preview strong{color:#1a0dab!important;font:500 20px Arial,sans-serif!important;line-height:1.3}
+.seo-google-preview span{color:#188038!important;font:14px Arial,sans-serif!important}
+.seo-google-preview p{color:#4d5156!important;font:14px/1.5 Arial,sans-serif!important}
+.seo-preview{background:#fff!important;color:#202124!important;border-color:#dadce0!important}
+.seo-preview summary{color:#202124!important}
+.seo-preview summary span{color:#5f6368!important}
 </style><script src="domain-redirect.js"></script></head><body><header class="site-header"><a class="wordmark" href="index.html" aria-label="DeLune home"><img src="logo.png" alt="DeLune" class="delune-logo"></a><a class="underlined-link" href="index.html">Back to store ↗</a></header>
 <main class="admin-wrap">
 <section id="loginPanel" class="admin-card login-box"><p class="eyebrow">RESTRICTED ACCESS</p><h1 style="font:500 34px var(--serif);margin:0 0 25px">Moderator sign in</h1><form id="loginForm"><div class="field"><label>Email / username</label><input id="loginEmail" type="text" autocomplete="username" required></div><div class="field"><label>Password</label><input id="loginPassword" type="password" autocomplete="current-password" required></div><button class="admin-button" type="submit">Sign in</button><p class="status" id="loginStatus">Moderator accounts must be created in Supabase Auth by the project owner.</p></form></section>
