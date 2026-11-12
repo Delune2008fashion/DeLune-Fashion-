@@ -8,5 +8,5 @@
   while(clean.length>1&&clean.endsWith("/"))clean=clean.slice(0,-1);
   var routes={"/":"/index.html","/index":"/index.html","/categories":"/categories.html","/about":"/about.html","/contact":"/contact.html","/product":"/product.html","/moderate":"/moderate.html"};
   var target=routes[clean.toLowerCase()]||clean;
-  location.replace("https://delune.qd.je"+target+location.search+location.hash);
+  location.replace("https://delune2008fashion.github.io/DeLune-Fashion-"+target+location.search+location.hash);
 })();
