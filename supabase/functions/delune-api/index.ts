@@ -74,16 +74,13 @@ Deno.serve(async(req)=>{
     return out({success:true,phone:o.customer_phone,customer_name:o.customer_name,order_code:o.order_code});
    }
    if(a==="notify-now"||a==="queue"){
-    if(o.order_status!=="payment_not_confirmed")throw new Error("Notify options are available only after marking payment not confirmed.");
-    const message=String(body.message||"Dear User, your order is not confirmed. Please place a new order and submit a valid, unused transaction ID. Previously submitted Transaction IDs cannot be reused. Thank you for choosing DeLune.");
+    const type=String(body.message_type||"not_confirmed");
+    const confirmed=["processing","confirmed","shipped","delivered","completed"].includes(o.order_status);
+    if(type==="confirmed"&&!confirmed)throw new Error("This order is not confirmed.");
+    if(type==="not_confirmed"&&o.order_status!=="payment_not_confirmed")throw new Error("This order is not marked as not confirmed.");
+    const message=String(body.message||"").trim();if(!message)throw new Error("Message is empty.");
     const {data:n,error}=await db.from("notifications").insert({order_id:orderId,recipient_phone:o.customer_phone,message,created_by:user.id,status:a==="queue"?"queued":"opened"}).select("id").single();if(error)throw error;
     return out({success:true,notification_id:n.id,phone:o.customer_phone,message});
-   }
-   if(a==="tracking"){
-    const tracking=String(body.tracking_number||"").trim(),carrier=String(body.carrier||"").trim();
-    const {error}=await db.from("tracking").upsert({order_id:orderId,tracking_number:tracking||null,carrier:carrier||null,updated_by:user.id,updated_at:new Date().toISOString()},{onConflict:"order_id"});if(error)throw error;
-    if(tracking)await db.from("orders").update({order_status:"shipped",updated_at:new Date().toISOString()}).eq("id",orderId);
-    return out({success:true});
    }
    throw new Error("Unsupported merchant action.");
   }
