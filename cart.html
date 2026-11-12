@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#520079"><title>Your Cart — DeLune</title>
-<link rel="icon" href="/logo.png"><link rel="stylesheet" href="/styles.css?v=20261112-cart-flow-v1">
+<link rel="icon" href="logo.png"><link rel="stylesheet" href="styles.css?v=20261112-cart-flow-v1">
 <style>
 .cart-wrap{max-width:1050px;margin:42px auto 90px;padding:0 5%}.cart-panel{background:#fff8fa;border:1px solid #ebc5d3;padding:22px;margin:16px 0;border-radius:12px}.cart-row{display:grid;grid-template-columns:100px 1fr auto;gap:16px;align-items:center;border-bottom:1px solid #ebc5d3;padding:14px 0}.cart-row img{width:100px;height:120px;object-fit:cover;background:#f4cedc}.cart-row input,.cart-form input,.cart-form select,.cart-form textarea{width:100%;padding:11px;background:#fff;color:#281923;border:1px solid #d8aabd;border-radius:5px}.cart-form label{display:grid;gap:6px;margin:12px 0;font-size:12px}.cart-btn{padding:13px 18px;border:0;cursor:pointer;margin:5px 5px 5px 0;border-radius:5px;font-size:10px;letter-spacing:.08em;text-transform:uppercase}.cart-muted{color:#806371;font-size:13px;line-height:1.6}.cart-total{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ebc5d3}.cart-remove{background:#f2e4ea;color:#281923}.cart-whatsapp{background:#25D366;color:#102d1d}.cart-messenger{background:#0866FF;color:white}.cart-online{background:#111;color:white}.cart-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.payment-panel{border-top:1px solid #ebc5d3;margin-top:16px;padding-top:16px}.payment-panel[hidden]{display:none!important}.cart-status{margin-top:12px;min-height:20px}.cart-empty{padding:25px 0;text-align:center}
 @media(max-width:600px){.cart-row{grid-template-columns:72px 1fr}.cart-row img{width:72px;height:90px}.cart-row .cart-remove{grid-column:2}.cart-row input{max-width:100px}.cart-panel{padding:16px}}
  .delune-pending-toast{position:fixed;left:50%;bottom:22px;z-index:99999;transform:translate(-50%,24px);opacity:0;pointer-events:none;background:#16834a;color:#fff;padding:14px 20px;border-radius:10px;box-shadow:0 10px 32px #0004;display:grid;gap:4px;text-align:center;width:max-content;max-width:calc(100% - 28px);transition:opacity .22s,transform .22s}.delune-pending-toast.show{opacity:1;transform:translate(-50%,0)}.delune-pending-toast strong,.delune-pending-toast span{color:#fff!important}.delune-pending-toast span{font-size:12px} .cart-manage-row{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:16px 0 22px}.cart-manage-row .cart-form{flex:1;min-width:220px;margin:0}.delune-pending-toast{position:fixed;left:50%;bottom:22px;z-index:99999;transform:translate(-50%,24px);opacity:0;pointer-events:none;background:#16834a;color:#fff;padding:14px 20px;border-radius:10px;box-shadow:0 10px 32px #0004;display:grid;gap:4px;text-align:center;width:max-content;max-width:calc(100% - 28px);transition:opacity .22s,transform .22s}.delune-pending-toast.show{opacity:1;transform:translate(-50%,0)}.delune-pending-toast strong,.delune-pending-toast span{color:#fff!important}.delune-pending-toast span{font-size:12px}</style>
 </head>
 <body>
-<header class="site-header"><a class="wordmark" href="/index.html"><img src="/logo.png" alt="DeLune" class="delune-logo"></a><a class="underlined-link" href="/categories.html">Continue shopping ↗</a></header>
+<header class="site-header"><a class="wordmark" href="index.html"><img src="logo.png" alt="DeLune" class="delune-logo"></a><a class="underlined-link" href="categories.html">Continue shopping ↗</a></header>
 <main class="cart-wrap">
 <p class="eyebrow">DELUNE · GUEST CART</p><h1 style="font:500 clamp(34px,6vw,52px) var(--serif)">Your shopping cart</h1>
 <p class="cart-muted">No account or login required. Your carts are saved on this device.</p><div class="cart-manage-row"><label class="cart-form">Select your cart<select id="cartSelector" aria-label="Select your cart"></select></label><button type="button" id="deleteCart" class="cart-btn cart-remove">Delete this cart</button></div>
@@ -41,5 +41,5 @@
 </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/config.js"></script><script src="/store.js"></script><script src="/cart.js?v=20261112-cart-delete-toast-v3"></script>
+<script src="config.js"></script><script src="store.js"></script><script src="cart.js?v=20261112-cart-delete-toast-v3"></script>
 </body></html>
