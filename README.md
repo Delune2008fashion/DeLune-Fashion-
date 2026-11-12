@@ -80,7 +80,7 @@ This update adds a separate delivery-charge checkout, a protected Merchant Porta
 4. Deploy the Edge Function from this repository: `supabase functions deploy delune-api`. Set/confirm the Edge Function environment variables `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in the Supabase project. Never place the service-role key in browser code.
 5. In `creator.html`, sign in as Site Creator and set the delivery charge. The bKash recipient is prefilled as `+8801875312169`; it can be changed later in the same dashboard. Nagad remains disabled until its recipient number is added.
 6. Create a Merchant manually or generate an invitation from `creator.html`. Merchants sign in at `merchant.html`.
-7. If exactly one Merchant is active, new orders are assigned automatically. If multiple Merchants are active, new orders stay unassigned until the Site Creator assigns them in the Creator console.
+7. Run `merchant-auto-assignment-migration.sql` after the commerce and checkout migrations. It assigns new orders to the least-loaded active Merchant and distributes previously unassigned orders. If no Merchant is active, orders remain unassigned until one is activated.
 
 ### Transaction and payment rules
 - Payment verification is manual. A Merchant must compare the submitted ID with the actual received payment in the relevant bKash/Nagad account before confirming.
@@ -89,4 +89,4 @@ This update adds a separate delivery-charge checkout, a protected Merchant Porta
 - “Notify customer now” opens WhatsApp with a prepared message. “Send message later” saves the message in the Merchant queue; the Merchant opens WhatsApp and presses Send. Fully automated WhatsApp sending requires a later WhatsApp Business Platform integration.
 - Checkout is paused until the Site Creator sets a delivery charge. Only the delivery charge is collected; the product price is retained for order reference.
 
-The GitHub Pages files are committed to `main`. Supabase SQL migration and Edge Function deployment are separate steps and must be completed before accepting real orders.
+The GitHub Pages files are committed to `main`. Supabase SQL migrations and Edge Function deployment are separate steps and must be completed before accepting real orders. The merchant auto-assignment migration must also be run in the Supabase SQL Editor; committing it to GitHub does not apply it to the live database.
