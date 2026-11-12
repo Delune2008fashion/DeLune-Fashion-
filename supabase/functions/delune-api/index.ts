@@ -16,10 +16,10 @@ Deno.serve(async(req)=>{
    if(!name||!phone||!address||!body.product_id||!txn)throw new Error("Complete all required fields.");
    if(name.length>100||phone.length>25||address.length>500||txn.length>100)throw new Error("One or more fields are too long.");
    if(!["bkash","nagad"].includes(provider))throw new Error("Select a valid payment method.");
-   const keys=["delivery_charge_bdt","bkash_number","nagad_number"];
-   const {data:settings,error:se}=await db.from("site_settings").select("key,value").in("key",keys);if(se)throw se;
+   const {data:product,error:pe}=await db.from("products").select("id,delivery_charge,is_published,is_available").eq("id",String(body.product_id)).maybeSingle();if(pe)throw pe;if(!product||!product.is_published||!product.is_available)throw new Error("Product is unavailable.");
+   const charge=Number(product.delivery_charge);if(!Number.isFinite(charge)||charge<=0)throw new Error("This product does not have a delivery charge yet. Please contact DeLune.");
+   const {data:settings,error:se}=await db.from("site_settings").select("key,value").in("key",["bkash_number","nagad_number"]);if(se)throw se;
    const vals=Object.fromEntries((settings||[]).map(x=>[x.key,x.value]));
-   const charge=Number(vals.delivery_charge_bdt);if(!Number.isFinite(charge)||charge<=0)throw new Error("Delivery charge has not been configured yet.");
    if(!String(vals[provider+"_number"]||"").trim())throw new Error("This payment method is not configured yet.");
    const {data,error}=await db.rpc("create_delune_order",{p_customer_name:name,p_customer_phone:phone,p_delivery_address:address,p_product_id:body.product_id,p_quantity:Number(body.quantity),p_size:String(body.size||"One size"),p_provider:provider,p_transaction_id:txn,p_delivery_charge:charge});
    if(error){if((error.message||"").includes("DUPLICATE_TRANSACTION_ID")||(error.message||"").toLowerCase().includes("unique"))throw new Error("DUPLICATE_TRANSACTION_ID");throw error}
