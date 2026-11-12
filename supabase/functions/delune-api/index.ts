@@ -65,6 +65,7 @@ Deno.serve(async(req)=>{
    if(role==="merchant"&&o.merchant_id!==user.id)throw new Error("This order is not assigned to your account.");
    const a=String(body.operation||"");
    if(a==="confirm"||a==="reject"){
+    if(o.order_status!=="payment_pending")throw new Error("This order is no longer awaiting payment verification.");
     const status=a==="confirm"?"confirmed":"not_confirmed",orderStatus=a==="confirm"?"processing":"payment_not_confirmed";
     const p=await db.from("payments").update({status,verified_by:user.id,verified_at:new Date().toISOString()}).eq("order_id",orderId);if(p.error)throw p.error;
     const t=await db.from("transactions").update({status}).eq("order_id",orderId);if(t.error)throw t.error;
@@ -73,6 +74,7 @@ Deno.serve(async(req)=>{
     return out({success:true,phone:o.customer_phone,customer_name:o.customer_name,order_code:o.order_code});
    }
    if(a==="notify-now"||a==="queue"){
+    if(o.order_status!=="payment_not_confirmed")throw new Error("Notify options are available only after marking payment not confirmed.");
     const message=String(body.message||"Dear User, your order is not confirmed. Please place a new order and submit a valid, unused transaction ID. Previously submitted Transaction IDs cannot be reused. Thank you for choosing DeLune.");
     const {data:n,error}=await db.from("notifications").insert({order_id:orderId,recipient_phone:o.customer_phone,message,created_by:user.id,status:a==="queue"?"queued":"opened"}).select("id").single();if(error)throw error;
     return out({success:true,notification_id:n.id,phone:o.customer_phone,message});
