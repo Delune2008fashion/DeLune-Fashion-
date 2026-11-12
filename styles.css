@@ -420,3 +420,58 @@ body.checkout-open{overflow:hidden}
 
 /* Green WhatsApp contact label in the three-step checkout */
 .checkout-whatsapp-label{color:#25D366!important;font-weight:700}.checkout-whatsapp-label input{margin-top:7px}
+
+
+/* DeLune deep-purple / white high-contrast theme */
+:root{
+ --ink:#FFFFFF;
+ --paper:#321044;
+ --ivory:#24102F;
+ --sand:#A98ABF;
+ --muted:#E5D8EF;
+ --line:#68447C;
+ --serif:"Playfair Display",Georgia,serif;
+ --sans:"DM Sans",Arial,sans-serif;
+ color-scheme:dark;
+}
+html,body{background:#24102F!important;color:#FFFFFF!important}
+body{color:#FFFFFF!important}
+.site-header,.menu-panel,.search-bar,.announcement,.footer,.site-footer{
+ background:#321044!important;color:#FFFFFF!important;border-color:#68447C!important
+}
+.announcement{background:#190A23!important;color:#FFFFFF!important}
+a,button,.desktop-nav a,.footer-links a,.wordmark,.text-button{color:#FFFFFF}
+p,small,label,li,span,h1,h2,h3,h4,h5,h6,strong,.eyebrow,.hero-description,.cart-muted,.product-description,.category-description,.muted{
+ color:#FFFFFF!important
+}
+.eyebrow,.hero-description,.cart-muted{opacity:.9}
+section,article,.card,.product-card,.category-card,.collection-card,.menu-panel,.search-bar{
+ color:#FFFFFF
+}
+section:not(.hero):not(.hero-image),.cart-panel,.product-info,.product-details,.checkout-panel,.modal-content{
+ background-color:#321044;
+}
+input,textarea,select,.search-bar input,.cart-form input,.cart-form select,.cart-form textarea{
+ background:#4A2460!important;color:#FFFFFF!important;border:1px solid #A98ABF!important;
+}
+input::placeholder,textarea::placeholder{color:#E5D8EF!important;opacity:.8}
+button,.button{color:#FFFFFF}
+.button-dark,.cart-online{background:#16091F!important;color:#FFFFFF!important}
+.icon-button{color:#FFFFFF!important}
+.site-header{border-bottom-color:#68447C!important}
+.menu-panel{box-shadow:0 18px 40px #10051999!important}
+.hero{background:#24102F!important;color:#FFFFFF!important}
+.hero h1,.hero h1 em,h2 em{color:#FFFFFF!important}
+.hero-description,.hero-side-label,.intro-strip,.eyebrow{color:#F1E8F7!important}
+.intro-strip{border-color:#68447C!important}
+.hero-image{background:#4A2460!important}
+.cart-panel{background:#3B1950!important;border-color:#805B98!important}
+.cart-row{border-bottom-color:#805B98!important}
+.cart-row img{background:#4A2460!important}
+.cart-total{border-bottom-color:#805B98!important}
+.cart-remove{background:#68447C!important;color:#FFFFFF!important}
+.cart-whatsapp{background:#25D366!important;color:#FFFFFF!important}
+.cart-messenger{background:#0866FF!important;color:#FFFFFF!important}
+.cart-online{background:#16091F!important;color:#FFFFFF!important}
+.payment-panel{border-top-color:#805B98!important}
+::selection{background:#A98ABF;color:#16091F}
