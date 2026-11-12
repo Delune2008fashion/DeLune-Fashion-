@@ -44,3 +44,11 @@ exception when unique_violation then raise exception 'DUPLICATE_TRANSACTION_ID';
 end $$;
 revoke all on function public.create_delune_cart_order(text,text,text,text,jsonb,text,text) from public,anon,authenticated;
 grant execute on function public.create_delune_cart_order(text,text,text,text,jsonb,text,text) to service_role;
+
+-- Allow merchants to inspect the immutable activity history for their own assigned orders.
+drop policy if exists "DeLune merchant reads own order audit" on public.audit_logs;
+create policy "DeLune merchant reads own order audit" on public.audit_logs
+for select to authenticated
+using(public.is_delune_merchant() and entity_type='order' and exists(
+ select 1 from public.orders o where o.id::text=entity_id and o.merchant_id=auth.uid()
+));
