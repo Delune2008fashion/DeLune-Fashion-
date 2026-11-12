@@ -13,4 +13,26 @@ body{background:#A66BC2!important;color:#fff!important}
 .portal .tag{background:#310047!important;color:#fff!important;border:1px solid #C7A5D8}
 .portal a{color:#fff!important}
 
+
+/* Merchant dashboard layout refinement */
+.portal{max-width:1120px!important;padding:32px 20px 76px!important;display:grid;gap:18px}
+.portal>.box{border-radius:18px!important;padding:clamp(18px,3vw,28px)!important;margin:0!important}
+.portal>.orderhead{background:#FBF8FD;border:1px solid #E2D5EA;border-radius:18px;padding:20px 24px;color:#310047!important;box-shadow:0 8px 24px rgba(49,0,71,.07)}
+.portal>.orderhead *{color:#310047!important}
+.portal>.orderhead .muted{color:#75627F!important}
+.portal h1,.portal h2{line-height:1.2}
+.portal .order{border-radius:13px!important;padding:18px!important;margin:12px 0!important;background:rgba(255,255,255,.10)!important}
+.portal .order p{line-height:1.65;overflow-wrap:anywhere}
+.portal .orderhead .tag{border-radius:999px;padding:6px 10px}
+.portal .actions,.portal .tracking{align-items:center}
+.portal .actions .btn,.portal .tracking .btn{min-height:42px;border-radius:8px}
+.portal .tracking input{min-width:0;flex:1 1 150px;border-radius:8px}
+.portal .btn{border-radius:8px;min-height:42px}
+.portal .box>h2{margin-bottom:16px!important}
+.portal #orders,.portal #queued{display:grid;gap:10px}
+.portal .login{margin:35px auto!important;width:min(100%,460px)}
+.portal .login form{display:grid;gap:12px}
+.portal .login .field{margin:0}
+.portal .login .btn{width:100%}
+@media(max-width:650px){.portal{padding:22px 14px 55px!important}.portal>.orderhead{padding:17px;gap:12px}.portal>.orderhead h1{font-size:30px!important}.portal .actions .btn{flex:1 1 130px}.portal .tracking{display:grid;grid-template-columns:1fr 1fr}.portal .tracking input{width:100%;grid-column:span 1}.portal .tracking .btn{grid-column:1/-1}}
 </style></head><body><header class="site-header"><a class="wordmark" href="/index.html"><img src="/logo.png" alt="DeLune" class="delune-logo"></a><a class="underlined-link" href="/index.html">Back to store ↗</a></header><main class="portal"><section id="login" class="box login"><p class="eyebrow">RESTRICTED ACCESS</p><h1 style="font:500 34px var(--serif)">Merchant sign in</h1><form id="loginForm"><div class="field"><label>Email</label><input id="email" type="email" required autocomplete="username"></div><div class="field"><label>Password</label><input id="password" type="password" required autocomplete="current-password"></div><button class="btn">Sign in</button></form><p id="loginStatus" class="muted"></p></section><section id="dashboard" class="hidden"><div class="orderhead" style="align-items:center;margin-bottom:20px"><div><p class="eyebrow">ORDER OPERATIONS</p><h1 style="font:500 38px var(--serif);margin:0">Merchant dashboard</h1><p id="merchantName" class="muted"></p></div><button id="logout" class="btn alt">Sign out</button></div><div class="box"><div class="orderhead"><h2 style="font:500 24px var(--serif);margin:0">Assigned orders</h2><button id="refresh" class="btn alt">Refresh</button></div><div id="orders" class="muted">Loading…</div></div><div class="box"><h2 style="font:500 23px var(--serif);margin:0 0 12px">Messages to send later</h2><div id="queued" class="muted">Loading…</div></div><p id="dashStatus" class="status muted"></p></section></main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/config.js"></script><script src="/store.js"></script><script src="/merchant.js?v=20261112"></script></body></html>
