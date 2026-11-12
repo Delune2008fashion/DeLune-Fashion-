@@ -521,3 +521,10 @@ button,.button{color:#FFFFFF}
 .cart-nav-link svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .cart-count{position:absolute;top:0;right:0;min-width:17px;height:17px;padding:0 4px;border-radius:20px;background:#520079;color:#fff;font:600 10px/17px var(--sans);text-align:center;box-shadow:0 0 0 2px var(--ivory)}
 .cart-count[hidden]{display:none}
+
+/* Clear, prominent delivery-charge payment instructions */
+.cart-payment-number,.cart-delivery-due{margin:10px 0;padding:12px;border:1px solid #A98ABF;border-radius:10px;background:#321044;color:#fff}
+.cart-payment-number span,.cart-delivery-due span{display:block;font-size:12px;opacity:.9}
+.cart-payment-number strong{display:block;font-size:18px;overflow-wrap:anywhere;margin-top:4px}
+.cart-delivery-due{background:#4A2460;border:2px solid #E5D8EF}
+.cart-delivery-due strong{display:block;font-size:30px;line-height:1.2;margin-top:5px;color:#fff}
