@@ -63,7 +63,7 @@ async function renderProduct(){
     if(e.target.closest(".checkout-back")){step=Math.max(1,step-1);paint();return}
     if(e.target.closest(".checkout-online")){sessionStorage.setItem("delune_checkout_customer",JSON.stringify(customer));const url=new URL("/checkout.html",location.origin);url.searchParams.set("product_id",p.id);url.searchParams.set("quantity",String(quantity));url.searchParams.set("size",selected);window.location.href=url.href;return;}
     if(e.target.closest(".checkout-submit")||e.target.closest(".checkout-messenger")){
-     const msg=["Hello DeLune, I would like to place an order:","Product: "+p.name,"Variant: "+selected,"Quantity: "+quantity,"Unit price: "+money(p.price),"Total: "+money(total()),"Name: "+customer.name,"Contact: "+customer.phone,"Delivery address: "+customer.address].join("\n");
+     const msg=["Hello DeLune, I would like to place an order:","Product: "+p.name,"Product image: "+(pics[0]||"Not available"),"Variant: "+selected,"Quantity: "+quantity,"Unit price: "+money(p.price),"Product total: "+money(total()),"Name: "+customer.name,"Contact: "+customer.phone,"Delivery address: "+customer.address].join("\n");
      if(e.target.closest(".checkout-messenger")){
       const messengerUrl=window.DELUNE_CONFIG?.MESSENGER_URL||"";
       if(!messengerUrl){alert("Messenger ordering is not configured.");return}
