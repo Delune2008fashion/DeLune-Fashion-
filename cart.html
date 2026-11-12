@@ -31,7 +31,7 @@
 <div id="paymentPanel" class="payment-panel" hidden>
 <h3>Online delivery payment</h3>
 <label>Payment method<select name="provider"><option value="bkash">bKash</option><option value="nagad">Nagad</option></select></label>
-<p id="payNumbers" class="cart-muted"></p>
+<p id="payNumbers" class="cart-muted"></p><div class="cart-total" style="display:block;background:#fff0f5;border:2px solid #a83268;border-radius:10px;padding:16px;margin:14px 0"><span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase">Exact delivery charge to send</span><strong id="deliveryPaymentDue" style="display:block;font-size:clamp(28px,7vw,42px);line-height:1.2;color:#7b1749;margin-top:6px">Select district first</strong></div>
 <p class="cart-muted">Enter the Transaction ID received after paying the delivery charge. This field appears only for online orders.</p>
 <label>Transaction ID<input name="transaction_id" maxlength="100" autocomplete="off"></label>
 <button class="cart-btn cart-online" type="submit" id="submitOnline">Confirm online order</button>
