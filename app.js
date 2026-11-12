@@ -53,36 +53,29 @@ async function renderProduct(){
    };
    const close=()=>{overlay.hidden=true;document.body.classList.remove("checkout-open")};
    const CARTS_KEY="delune_guest_carts_v2";
-   const readCarts=()=>{try{const v=JSON.parse(localStorage.getItem(CARTS_KEY)||"null");if(v&&Array.isArray(v.carts))return v;const legacy=JSON.parse(localStorage.getItem("delune_guest_cart_v1")||"[]");const carts=[{id:"cart-1",name:"Cart 1",items:Array.isArray(legacy)?legacy:[]}];return{carts,activeCartId:"cart-1"}}catch{return{carts:[],activeCartId:null}}};
+   const readCarts=()=>{try{const v=JSON.parse(localStorage.getItem(CARTS_KEY)||"null");if(v&&Array.isArray(v.carts))return v;const legacy=JSON.parse(localStorage.getItem("delune_guest_cart_v1")||"[]");return{carts:[{id:"cart-1",name:"Cart 1",items:Array.isArray(legacy)?legacy:[]}],activeCartId:"cart-1"}}catch{return{carts:[],activeCartId:null}}};
    const writeCarts=v=>localStorage.setItem(CARTS_KEY,JSON.stringify(v));
-   const addItem=cart=>{const found=cart.items.find(x=>x.product_id===p.id&&x.size===selected);if(found)found.quantity=Math.min(99,Number(found.quantity||1)+quantity);else cart.items.push({product_id:p.id,name:p.name,price:Number(p.price),image:pics[0]||"",size:selected,quantity,addedAt:new Date().toISOString()});};
-   const addToDefaultCart=()=>{const data=readCarts();if(!data.carts.length)data.carts.push({id:"cart-1",name:"Cart 1",items:[]});const cart=data.carts[0];addItem(cart);data.activeCartId=cart.id;writeCarts(data);location.href="/cart.html?cart_id="+encodeURIComponent(cart.id)};
-   $(".add-to-cart",root).addEventListener("click",addToDefaultCart);
-   const open=()=>{const data=readCarts();const overlay=document.createElement("div");overlay.className="checkout-overlay";overlay.innerHTML='<section class="checkout-panel cart-picker" role="dialog" aria-modal="true"><button type="button" class="checkout-close" aria-label="Close">×</button><h2>Select your cart</h2><p>Choose an existing cart or create a new one for this product.</p><div class="cart-picker-list"></div><button type="button" class="whatsapp-button create-cart-option">＋ Add another cart</button></section>';document.body.appendChild(overlay);const list=$(".cart-picker-list",overlay);const close=()=>overlay.remove();const choose=id=>{let cart=data.carts.find(x=>x.id===id);if(!cart)return;addItem(cart);data.activeCartId=cart.id;writeCarts(data);location.href="/cart.html?cart_id="+encodeURIComponent(cart.id)};const paint=()=>{list.innerHTML=data.carts.map((cart,i)=>'<button type="button" class="cart-picker-option" data-cart="'+safe(cart.id)+'"><strong>'+safe(cart.name||("Cart "+(i+1)))+'</strong><span>'+cart.items.length+' product line(s) · '+cart.items.reduce((n,x)=>n+Number(x.quantity||0),0)+' item(s)</span></button>').join("")||'<p>No carts yet. Create your first cart.</p>'};paint();list.addEventListener("click",e=>{const b=e.target.closest("[data-cart]");if(b)choose(b.dataset.cart)});$(".create-cart-option",overlay).onclick=()=>{const id="cart-"+Date.now();data.carts.push({id,name:"Cart "+(data.carts.length+1),items:[]});choose(id)};$(".checkout-close",overlay).onclick=close;overlay.addEventListener("click",e=>{if(e.target===overlay)close()})};
+   const addItem=cart=>{cart.items=Array.isArray(cart.items)?cart.items:[];const found=cart.items.find(x=>x.product_id===p.id&&x.size===selected);if(found)found.quantity=Math.min(99,Number(found.quantity||1)+quantity);else cart.items.push({product_id:p.id,name:p.name,price:Number(p.price),image:pics[0]||"",size:selected,quantity,addedAt:new Date().toISOString()})};
+   const openCartPicker=()=>{const data=readCarts();const picker=document.createElement("div");picker.className="checkout-overlay";picker.innerHTML='<section class="checkout-panel cart-picker" role="dialog" aria-modal="true"><button type="button" class="checkout-close" aria-label="Close">×</button><h2>Select your cart</h2><p>Choose which cart should receive this product.</p><div class="cart-picker-list"></div><button type="button" class="whatsapp-button create-cart-option">＋ Add another cart</button></section>';document.body.appendChild(picker);const list=$(".cart-picker-list",picker);const close=()=>picker.remove();const choose=id=>{const cart=data.carts.find(x=>x.id===id);if(!cart)return;addItem(cart);data.activeCartId=id;writeCarts(data);location.href="/cart.html?cart_id="+encodeURIComponent(id)};list.innerHTML=data.carts.map((cart,i)=>'<button type="button" class="cart-picker-option" data-cart="'+safe(cart.id)+'"><strong>'+safe(cart.name||("Cart "+(i+1)))+'</strong><span>'+((cart.items||[]).length)+' product line(s) · '+(cart.items||[]).reduce((n,x)=>n+Number(x.quantity||0),0)+' item(s)</span></button>').join("")||'<p>No carts yet. Create your first cart.</p>';list.addEventListener("click",e=>{const b=e.target.closest("[data-cart]");if(b)choose(b.dataset.cart)});$(".create-cart-option",picker).onclick=()=>{const id="cart-"+Date.now();data.carts.push({id,name:"Cart "+(data.carts.length+1),items:[]});choose(id)};$(".checkout-close",picker).onclick=close;picker.addEventListener("click",e=>{if(e.target===picker)close()})};
+   $(".add-to-cart",root).addEventListener("click",openCartPicker);
+   const open=()=>{overlay.hidden=false;document.body.classList.add("checkout-open");step=1;quantity=1;customer={name:"",phone:"",address:"",district:""};paint()};
    $(".order-start",root).addEventListener("click",open);
    $(".checkout-close",overlay).onclick=close;
    overlay.addEventListener("click",e=>{if(e.target===overlay)close()});
    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!overlay.hidden)close()});
+   const delivery=()=>quantity===1?(customer.district==="Dhaka"?80:140):(customer.district==="Dhaka"?100:200);
    content.addEventListener("click",async e=>{
-    const qty=e.target.closest("[data-qty]");if(qty){quantity=Math.max(1,Math.min(99,quantity+Number(qty.dataset.qty)));paint();return}
+    const qbtn=e.target.closest("[data-qty]");if(qbtn){quantity=Math.max(1,Math.min(99,quantity+Number(qbtn.dataset.qty)));paint();return}
     if(e.target.closest(".checkout-next")){step=2;paint();return}
     if(e.target.closest(".checkout-back")){step=Math.max(1,step-1);paint();return}
-    if(e.target.closest(".checkout-online")){sessionStorage.setItem("delune_checkout_customer",JSON.stringify(customer));const url=new URL("/checkout.html",location.origin);url.searchParams.set("product_id",p.id);url.searchParams.set("quantity",String(quantity));url.searchParams.set("size",selected);window.location.href=url.href;return;}
     if(e.target.closest(".checkout-submit")||e.target.closest(".checkout-messenger")){
-     const msg=["Hello DeLune, I would like to place an order:","Product: "+p.name,"Product image: "+(pics[0]||"Not available"),"Variant: "+selected,"Quantity: "+quantity,"Unit price: "+money(p.price),"Product total: "+money(total()),"Name: "+customer.name,"Contact: "+customer.phone,"Delivery address: "+customer.address].join("\n");
-     if(e.target.closest(".checkout-messenger")){
-      const messengerUrl=window.DELUNE_CONFIG?.MESSENGER_URL||"";
-      if(!messengerUrl){alert("Messenger ordering is not configured.");return}
-      try{await navigator.clipboard.writeText(msg)}catch(err){}
-      window.open(messengerUrl,"_blank","noopener");
-      alert("Your order details are ready. Paste the copied message in Messenger to send your order.");
-     }else{
-      const number=String(window.DELUNE_CONFIG?.WHATSAPP_NUMBER||"").replace(/\D/g,"");
-      if(!number){alert("WhatsApp ordering is not configured yet. Please contact DeLune.");return}
-      window.open("https://wa.me/"+number+"?text="+encodeURIComponent(msg),"_blank","noopener");
-     }
-     close();
+     const charge=delivery(),grand=total()+charge;
+     const msg=["Hello DeLune, I would like to place an order:","Product: "+p.name,"Variant: "+selected,"Quantity: "+quantity,"Product subtotal: "+money(total()),"District: "+customer.district,"Delivery charge: "+money(charge),"Grand total: "+money(grand),"Name: "+customer.name,"WhatsApp: "+customer.phone,"Delivery address: "+customer.address].join("\\n");
+     if(e.target.closest(".checkout-messenger")){const url=window.DELUNE_CONFIG?.MESSENGER_URL||"";if(!url){alert("Messenger ordering is not configured.");return}try{await navigator.clipboard.writeText(msg)}catch(err){}window.open(url,"_blank","noopener")}
+     else{const number=String(window.DELUNE_CONFIG?.WHATSAPP_NUMBER||"").replace(/\\D/g,"");if(!number){alert("WhatsApp ordering is not configured yet.");return}window.open("https://wa.me/"+number+"?text="+encodeURIComponent(msg),"_blank","noopener")}
+     close();return;
     }
+    if(e.target.closest(".checkout-online")){sessionStorage.setItem("delune_checkout_customer",JSON.stringify(customer));const url=new URL("/checkout.html",location.origin);url.searchParams.set("product_id",p.id);url.searchParams.set("quantity",String(quantity));url.searchParams.set("size",selected);window.location.href=url.href}
    });
    content.addEventListener("submit",e=>{if(!e.target.matches(".checkout-form"))return;e.preventDefault();const fd=new FormData(e.target);customer={name:String(fd.get("name")||"").trim(),phone:String(fd.get("phone")||"").trim(),address:String(fd.get("address")||"").trim()};if(!customer.name||!customer.phone||!customer.address)return;step=3;paint()});
   }
