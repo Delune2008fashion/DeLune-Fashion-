@@ -20,7 +20,7 @@
     const {data,error}=await client.from("categories").select("*").eq("is_visible",true).order("sort_order");
     if(error) throw error; return data||[];
   }
-  async function heroImage(){if(!client)return "";const {data,error}=await client.from("site_settings").select("value").eq("key","hero_image_url").maybeSingle();if(error)throw error;return data?.value||""}
+  async function heroImage(){if(!client)return [];const {data,error}=await client.from("site_settings").select("value").eq("key","hero_image_url").maybeSingle();if(error)throw error;const raw=data?.value||"";if(!raw)return [];try{const parsed=JSON.parse(raw);if(Array.isArray(parsed))return parsed.filter(x=>typeof x==="string"&&x.trim())}catch{}return [raw]}
   async function product(identifier) {
     if (!client || !identifier) return null;
     let data=null, error=null;
