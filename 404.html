@@ -26,23 +26,23 @@
   if(productMatch){
     var productSlug;
     try{productSlug=decodeURIComponent(productMatch[1]);}catch(e){productSlug=productMatch[1];}
-    location.replace("https://delune.qd.je/product.html?slug="+encodeURIComponent(productSlug)+location.search+location.hash);
+    location.replace("https://delune2008fashion.github.io/DeLune-Fashion-/product.html?slug="+encodeURIComponent(productSlug)+location.search+location.hash);
     return;
   }
   var target=routes[clean.toLowerCase()];
   if(target){
-    location.replace("https://delune.qd.je"+target+location.search+location.hash);
+    location.replace("https://delune2008fashion.github.io/DeLune-Fashion-"+target+location.search+location.hash);
     return;
   }
-  if(legacyHost&&clean.toLowerCase().endsWith(".html"))location.replace("https://delune.qd.je"+clean+location.search+location.hash);
+  if(legacyHost&&clean.toLowerCase().endsWith(".html"))location.replace("https://delune2008fashion.github.io/DeLune-Fashion-"+clean+location.search+location.hash);
 })();
 </script>
 </head>
 <body>
 <main class="card">
 <h1>That page has moved</h1>
-<p>DeLune now lives at <strong>delune.qd.je</strong>.</p>
-<p><a href="https://delune.qd.je/">Continue to DeLune</a></p>
+<p>DeLune now lives at <strong>delune2008fashion.github.io/DeLune-Fashion-</strong>.</p>
+<p><a href="https://delune2008fashion.github.io/DeLune-Fashion-/">Continue to DeLune</a></p>
 </main>
 </body>
 </html>
