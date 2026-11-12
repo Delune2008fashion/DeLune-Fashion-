@@ -1,6 +1,6 @@
 # DeLune — Fashion catalogue starter
 
-A responsive luxury-minimalist storefront for a Bangladesh fashion label. Currency is BDT (৳); product enquiries are sent to WhatsApp.
+A responsive luxury-minimalist storefront for a Bangladesh fashion label. Currency is BDT (BDT ); product enquiries are sent to WhatsApp.
 
 ## Included
 - `index.html`: home, exclusive products and category showcase
