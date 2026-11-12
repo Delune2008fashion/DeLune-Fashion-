@@ -6,7 +6,7 @@ for(const key of ["products-add","categories-add","texts-manage","banner-manage"
 
 function activateAdminTab(name){document.querySelectorAll("[data-admin-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.adminTab===name)));document.querySelectorAll("[data-admin-pane]").forEach(p=>p.classList.toggle("active",p.dataset.adminPane===name));}
 document.querySelectorAll("[data-admin-tab]").forEach(b=>b.addEventListener("click",()=>activateAdminTab(b.dataset.adminTab)));
-const $=s=>document.querySelector(s), money=n=>"৳"+Number(n||0).toLocaleString("en-BD");
+const $=s=>document.querySelector(s), money=n=>"BDT "+Number(n||0).toLocaleString("en-BD");
 const status=(id,msg)=>$(id).textContent=msg;
 const cfg=window.DELUNE_CONFIG||{};
 const configured=DeLuneStore.configured;
@@ -32,7 +32,7 @@ $("#saveSeoKeywordLibrary").addEventListener("click",async()=>{try{await saveSeo
 $("#resetSeoKeywordLibrary").addEventListener("click",()=>{$("#seoKeywordLines").value=seoKeywordLines();status("#seoKeywordStatus","Starter list loaded. Save to replace the current library.")});
 $("#suggestSeoKeywords").addEventListener("click",suggestProductKeywords);
 
-function seoDefaults(){const name=$("#pName").value.trim()||"Product";const desc=$("#pDescription").value.trim();const price=$("#pPrice").value? " Price: ৳"+Number($("#pPrice").value).toLocaleString("en-BD")+".":"";return {slug:slugify(name)||"product",title:name+" — DeLune",description:(desc||"Discover "+name+" at DeLune.")+price}}
+function seoDefaults(){const name=$("#pName").value.trim()||"Product";const desc=$("#pDescription").value.trim();const price=$("#pPrice").value? " Price: BDT "+Number($("#pPrice").value).toLocaleString("en-BD")+".":"";return {slug:slugify(name)||"product",title:name+" — DeLune",description:(desc||"Discover "+name+" at DeLune.")+price}}
 function updateSEOPreview(){const d=seoDefaults(),id=$("#productId").value.trim(),slug=d.slug+(id?"-"+id.slice(0,8):"-auto"),title=$("#pSeoTitle").value.trim()||d.title,description=$("#pSeoDescription").value.trim()||d.description;$("#seoPreviewTitle").textContent=title;$("#seoPreviewUrl").textContent="https://delune.qd.je/products/"+slug+"/";$("#seoPreviewDescription").textContent=description;}
 ["#pName","#pDescription","#pPrice","#pSeoTitle","#pSeoDescription"].forEach(sel=>$(sel)?.addEventListener("input",updateSEOPreview));
 async function loadCategories(){
