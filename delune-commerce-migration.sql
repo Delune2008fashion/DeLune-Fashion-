@@ -1,4 +1,7 @@
 -- DeLune commerce + independent merchant system.
+-- Per-product delivery charge, maintained by moderators.
+alter table public.products add column if not exists delivery_charge numeric(12,2) not null default 0 check (delivery_charge >= 0);
+
 -- Run AFTER the current supabase-schema.sql. Safe to rerun by policy names.
 create extension if not exists pgcrypto;
 
