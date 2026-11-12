@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://delune.qd.je/sitemap.xml
+Sitemap: https://delune2008fashion.github.io/DeLune-Fashion-/sitemap.xml
