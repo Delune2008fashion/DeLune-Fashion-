@@ -24,18 +24,17 @@ Deno.serve(async(req)=>{
    const row=Array.isArray(data)?data[0]:data;return out({success:true,order_id:row.order_id,order_code:row.order_code,delivery_charge:row.delivery_charge,product_subtotal:row.product_subtotal,total_quantity:row.total_quantity});
   }
   if(action==="create-order"){
-   const name=String(body.customer_name||"").trim(),phone=String(body.customer_phone||"").trim(),address=String(body.delivery_address||"").trim(),txn=String(body.transaction_id||"").trim(),provider=String(body.provider||"");
-   if(!name||!phone||!address||!body.product_id||!txn)throw new Error("Complete all required fields.");
+   const name=String(body.customer_name||"").trim(),phone=String(body.customer_phone||"").trim(),address=String(body.delivery_address||"").trim(),district=String(body.district||"").trim(),txn=String(body.transaction_id||"").trim(),provider=String(body.provider||""),quantity=Number(body.quantity);
+   if(!name||!phone||!address||!district||!body.product_id||!txn)throw new Error("Complete all required fields.");
    if(name.length>100||phone.length>25||address.length>500||txn.length>100)throw new Error("One or more fields are too long.");
+   if(!Number.isInteger(quantity)||quantity<1||quantity>10)throw new Error("Quantity must be between 1 and 10.");
    if(!["bkash","nagad"].includes(provider))throw new Error("Select a valid payment method.");
-   const {data:product,error:pe}=await db.from("products").select("id,delivery_charge,is_published,is_available").eq("id",String(body.product_id)).maybeSingle();if(pe)throw pe;if(!product||!product.is_published||!product.is_available)throw new Error("Product is unavailable.");
-   const charge=Number(product.delivery_charge);if(!Number.isFinite(charge)||charge<=0)throw new Error("This product does not have a delivery charge yet. Please contact DeLune.");
    const {data:settings,error:se}=await db.from("site_settings").select("key,value").in("key",["bkash_number","nagad_number"]);if(se)throw se;
    const vals=Object.fromEntries((settings||[]).map(x=>[x.key,x.value]));
    if(!String(vals[provider+"_number"]||"").trim())throw new Error("This payment method is not configured yet.");
-   const {data,error}=await db.rpc("create_delune_order",{p_customer_name:name,p_customer_phone:phone,p_delivery_address:address,p_product_id:body.product_id,p_quantity:Number(body.quantity),p_size:String(body.size||"One size"),p_provider:provider,p_transaction_id:txn,p_delivery_charge:charge});
+   const {data,error}=await db.rpc("create_delune_order",{p_customer_name:name,p_customer_phone:phone,p_delivery_address:address,p_district:district,p_product_id:body.product_id,p_quantity:quantity,p_size:String(body.size||"One size"),p_provider:provider,p_transaction_id:txn});
    if(error){if((error.message||"").includes("DUPLICATE_TRANSACTION_ID")||(error.message||"").toLowerCase().includes("unique"))throw new Error("DUPLICATE_TRANSACTION_ID");throw error}
-   const row=Array.isArray(data)?data[0]:data;return out({success:true,order_id:row.order_id,order_code:row.order_code});
+   const row=Array.isArray(data)?data[0]:data;return out({success:true,order_id:row.order_id,order_code:row.order_code,delivery_charge:row.delivery_charge});
   }
   if(action==="create-merchant"){
    const {user}=await requireCreator();const email=String(body.email||"").trim().toLowerCase(),password=String(body.password||""),name=String(body.display_name||"").trim();
