@@ -64,6 +64,7 @@ Deno.serve(async(req)=>{
    const orderId=String(body.order_id||"");const {data:o,error:oe}=await db.from("orders").select("*").eq("id",orderId).single();if(oe||!o)throw new Error("Order not found.");
    if(role==="merchant"&&o.merchant_id!==user.id)throw new Error("This order is not assigned to your account.");
    const a=String(body.operation||"");
+   if(a==="hide-order"){if(!o.merchant_id)throw new Error("Order is not assigned to a merchant.");const {error}=await db.from("orders").update({merchant_hidden_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",orderId).eq("merchant_id",user.id);if(error)throw error;await db.from("audit_logs").insert({actor_id:user.id,action:"merchant_order_history_hidden",entity_type:"order",entity_id:orderId,details:{order_code:o.order_code}});return out({success:true,message:"Order hidden from this merchant history. Payment and transaction records retained."});}
    if(a==="confirm"||a==="reject"){
     if(o.order_status!=="payment_pending")throw new Error("This order is no longer awaiting payment verification.");
     const status=a==="confirm"?"confirmed":"not_confirmed",orderStatus=a==="confirm"?"processing":"payment_not_confirmed";
