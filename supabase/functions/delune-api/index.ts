@@ -93,8 +93,9 @@ Deno.serve(async(req)=>{
     if(type==="confirmed"&&!confirmed)throw new Error("This order is not confirmed.");if(type==="shipped"&&o.order_status!=="shipped")throw new Error("This order is not marked as shipped.");
     if(type==="not_confirmed"&&o.order_status!=="payment_not_confirmed")throw new Error("This order is not marked as not confirmed.");
     const message=String(body.message||"").trim();if(!message)throw new Error("Message is empty.");
-    const {data:n,error}=await db.from("notifications").insert({order_id:orderId,recipient_phone:o.customer_phone,message,created_by:user.id,status:a==="queue"?"queued":"opened"}).select("id").single();if(error)throw error;
-    return out({success:true,notification_id:n.id,phone:o.customer_phone,message});
+    const {data:n,error}=await db.from("notifications").insert({order_id:orderId,recipient_phone:o.customer_phone,message,created_by:user.id,status:a==="queue"?"queued":"opened"}).select("id,created_at").single();if(error)throw error;
+    await db.from("audit_logs").insert({actor_id:user.id,action:a==="queue"?"whatsapp_message_queued":"whatsapp_message_opened",entity_type:"order",entity_id:orderId,details:{order_code:o.order_code,message_type:type,source:"merchant_panel",notification_id:n.id}});
+    return out({success:true,notification_id:n.id,created_at:n.created_at,phone:o.customer_phone,message});
    }
    throw new Error("Unsupported merchant action.");
   }
