@@ -1,4 +1,7 @@
 -- Direct single-product checkout: calculate delivery charge from district and total quantity.
+alter table public.orders add column if not exists district text;
+alter table public.orders add column if not exists delivery_charge numeric(12,2) not null default 0;
+alter table public.orders add column if not exists product_subtotal numeric(12,2) not null default 0;
 create or replace function public.create_delune_order(
  p_customer_name text,p_customer_phone text,p_delivery_address text,p_district text,
  p_product_id uuid,p_quantity integer,p_size text,p_provider text,p_transaction_id text
