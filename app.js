@@ -70,7 +70,7 @@ async function renderProduct(){
     if(e.target.closest(".checkout-back")){step=Math.max(1,step-1);paint();return}
     if(e.target.closest(".checkout-submit")||e.target.closest(".checkout-messenger")){
      const charge=delivery(),grand=total()+charge;
-     const msg=["Hello DeLune, I would like to place an order:","Product: "+p.name,"Variant: "+selected,"Quantity: "+quantity,"Product subtotal: "+money(total()),"District: "+customer.district,"Delivery charge: "+money(charge),"Grand total: "+money(grand),"Name: "+customer.name,"WhatsApp: "+customer.phone,"Delivery address: "+customer.address].join("\\n");
+     const msg=["Hello DeLune, I would like to place an order:","Product: "+p.name,"Variant: "+selected,"Quantity: "+quantity,"Product subtotal: "+money(total()),"District: "+customer.district,"Delivery charge: "+money(charge),"Grand total: "+money(grand),"Name: "+customer.name,"WhatsApp: "+customer.phone,"Delivery address: "+customer.address].join("\n");
      if(e.target.closest(".checkout-messenger")){const url=window.DELUNE_CONFIG?.MESSENGER_URL||"";if(!url){alert("Messenger ordering is not configured.");return}try{await navigator.clipboard.writeText(msg)}catch(err){}window.open(url,"_blank","noopener")}
      else{const number=String(window.DELUNE_CONFIG?.WHATSAPP_NUMBER||"").replace(/\\D/g,"");if(!number){alert("WhatsApp ordering is not configured yet.");return}window.open("https://wa.me/"+number+"?text="+encodeURIComponent(msg),"_blank","noopener")}
      close();return;
