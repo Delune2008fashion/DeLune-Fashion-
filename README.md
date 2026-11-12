@@ -61,3 +61,32 @@ npm run test:mobile
 ### Supabase security notes
 
 The browser uses only the Supabase publishable/anon key. Never put a `service_role` key in `config.js`. Public visitors can read available products, visible categories and the two public site settings; only UUIDs listed in `public.moderators` can manage catalog content. Run `security-smoke-tests.sql` after applying the schema and verify a non-moderator account cannot write.
+
+
+## Commerce and Merchant Portal (2026-11-12)
+
+This update adds a separate delivery-charge checkout, a protected Merchant Portal, and a Site Creator console while preserving the existing product catalogue, moderator tools, WhatsApp and Messenger enquiry flow.
+
+### New pages
+- `checkout.html`: customer details, product variant/quantity, bKash or configured Nagad, Transaction ID submission.
+- `merchant.html`: merchant-only order queue, manual payment confirmation/rejection, customer WhatsApp notification now/later, optional tracking.
+- `creator.html`: Site Creator-only manual Merchant account creation, invitation links, delivery charge and recipient-number settings, unassigned-order assignment.
+- `accept-invitation.html`: one-time Merchant invitation activation.
+
+### Supabase setup required before checkout works
+1. Run the existing `supabase-schema.sql` if it has not already been applied.
+2. Run `delune-commerce-migration.sql` in Supabase SQL Editor.
+3. Create the Site Creator owner account in Supabase Authentication. Copy its Auth UUID, then run the bootstrap SQL at the bottom of `delune-commerce-migration.sql` to grant `site_creator`.
+4. Deploy the Edge Function from this repository: `supabase functions deploy delune-api`. Set/confirm the Edge Function environment variables `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in the Supabase project. Never place the service-role key in browser code.
+5. In `creator.html`, sign in as Site Creator and set the delivery charge. The bKash recipient is prefilled as `+8801875312169`; it can be changed later in the same dashboard. Nagad remains disabled until its recipient number is added.
+6. Create a Merchant manually or generate an invitation from `creator.html`. Merchants sign in at `merchant.html`.
+7. If exactly one Merchant is active, new orders are assigned automatically. If multiple Merchants are active, new orders stay unassigned until the Site Creator assigns them in the Creator console.
+
+### Transaction and payment rules
+- Payment verification is manual. A Merchant must compare the submitted ID with the actual received payment in the relevant bKash/Nagad account before confirming.
+- `(provider, normalized_transaction_id)` is globally unique. The same ID cannot be reused for another order with that provider, including after a rejected or cancelled order.
+- A unique Transaction ID is not proof that money was received.
+- “Notify customer now” opens WhatsApp with a prepared message. “Send message later” saves the message in the Merchant queue; the Merchant opens WhatsApp and presses Send. Fully automated WhatsApp sending requires a later WhatsApp Business Platform integration.
+- Checkout is paused until the Site Creator sets a delivery charge. Only the delivery charge is collected; the product price is retained for order reference.
+
+The GitHub Pages files are committed to `main`. Supabase SQL migration and Edge Function deployment are separate steps and must be completed before accepting real orders.
