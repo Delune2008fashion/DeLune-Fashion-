@@ -24,7 +24,7 @@ begin
  insert into public.order_items(order_id,product_id,product_name,unit_price,quantity,size)
  values(v_order,v_product.id,v_product.name,v_product.price,p_quantity,coalesce(nullif(trim(p_size),''),'One size'));
  insert into public.payments(order_id,provider,amount) values(v_order,p_provider,v_charge);
- v_norm:=upper(regexp_replace(trim(p_transaction_id),'\\s+','','g'));
+ v_norm:=upper(regexp_replace(trim(p_transaction_id),'[[:space:]]+','','g'));
  insert into public.transactions(provider,transaction_id,normalized_transaction_id,order_id)
  values(p_provider,trim(p_transaction_id),v_norm,v_order);
  insert into public.audit_logs(actor_id,action,entity_type,entity_id,details)
