@@ -78,6 +78,18 @@ Deno.serve(async(req)=>{
    if(a==="hide-order"){if(role!=="merchant")throw new Error("Only active Merchant accounts can delete shared order history.");const historyFilter=String(body.history_filter||"");if(!["all","shipped"].includes(historyFilter))throw new Error("History can only be deleted from All or Shipped orders.");if(historyFilter==="shipped"&&o.order_status!=="shipped")throw new Error("Only shipped orders can be removed from Shipped history.");const field=historyFilter==="all"?"merchant_hidden_from_all_at":"merchant_hidden_from_shipped_at";const {error}=await db.from("orders").update({[field]:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",orderId);if(error)throw error;await db.from("audit_logs").insert({actor_id:user.id,action:"merchant_global_order_history_hidden",entity_type:"order",entity_id:orderId,details:{order_code:o.order_code,history_filter:historyFilter}});return out({success:true,message:"Order removed from this history for every Merchant. Order and product records are retained."});}
    if(a==="mark-shipped"){if(!["confirmed","processing"].includes(o.order_status))throw new Error("Only confirmed orders can be marked as shipped.");const u=await db.from("orders").update({order_status:"shipped",updated_at:new Date().toISOString()}).eq("id",orderId);if(u.error)throw u.error;await db.from("audit_logs").insert({actor_id:user.id,action:"order_marked_shipped",entity_type:"order",entity_id:orderId,details:{order_code:o.order_code}});return out({success:true});}
    if(a==="confirm"||a==="reject"){
+    if(a==="confirm"){
+     const {data:items,error:itemError}=await db.from("order_items").select("id,product_id,product_name,quantity,products(id,is_published,is_available,image_urls)").eq("order_id",orderId);
+     if(itemError)throw itemError;
+     if(!Array.isArray(items)||items.length===0)throw new Error("Cannot confirm: this order has no product items.");
+     for(const item of items){
+      if(!item.product_id||!Number.isInteger(Number(item.quantity))||Number(item.quantity)<1)throw new Error("Cannot confirm: every order item must have a valid product and quantity greater than zero.");
+      const product=Array.isArray(item.products)?item.products[0]:item.products;
+      if(!product)throw new Error("Cannot confirm: product \""+String(item.product_name||"")+"\" no longer exists.");
+      if(!product.is_published||!product.is_available)throw new Error("Cannot confirm: product \""+String(item.product_name||"")+"\" is unavailable.");
+      if(!Array.isArray(product.image_urls)||!product.image_urls.some(url=>String(url||"").trim()))throw new Error("Cannot confirm: product \""+String(item.product_name||"")+"\" has no product image.");
+     }
+    }
     if(a==="confirm"&&o.order_status!=="payment_pending"&&o.order_status!=="payment_not_confirmed")throw new Error("This order cannot be confirmed from its current status.");if(a==="reject"&&o.order_status!=="payment_pending")throw new Error("This order is no longer awaiting payment verification.");
     const status=a==="confirm"?"confirmed":"not_confirmed",orderStatus=a==="confirm"?"confirmed":"payment_not_confirmed";
     const p=await db.from("payments").update({status,verified_by:user.id,verified_at:new Date().toISOString()}).eq("order_id",orderId);if(p.error)throw p.error;
