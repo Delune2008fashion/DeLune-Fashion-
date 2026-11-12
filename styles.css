@@ -486,3 +486,14 @@ button,.button{color:#FFFFFF}
 .cart-picker-option span{font-size:12px;opacity:.9}
 .create-cart-option{background:#24102F;color:#fff;border:1px dashed #A98ABF}
 #cartSelector{background:#4A2460;color:#fff;border:1px solid #A98ABF;padding:12px;border-radius:6px}
+
+
+/* Moderator-managed homepage headline ticker */
+.headline-ticker{width:100%;overflow:hidden;background:linear-gradient(105deg,#310047 0%,#520079 55%,#71309A 100%);color:#fff;border-top:1px solid rgba(255,255,255,.14);border-bottom:1px solid rgba(255,255,255,.14);padding:13px 0;position:relative}
+.headline-ticker-track{display:flex;width:max-content;will-change:transform;animation:deluneTickerScroll 38s linear infinite}
+.headline-ticker-group{display:flex;align-items:center;flex-shrink:0;white-space:nowrap}
+.headline-ticker-item{font:600 11px/1.4 "DM Sans",sans-serif;letter-spacing:.16em;text-transform:uppercase;padding:0 22px;color:#fff}
+.headline-ticker-separator{font-size:12px;color:#D7B7E8}
+.headline-ticker:hover .headline-ticker-track{animation-play-state:paused}
+@keyframes deluneTickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.headline-ticker-track{animation:none;transform:none}}
