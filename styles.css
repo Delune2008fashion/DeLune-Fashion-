@@ -420,3 +420,9 @@ body.checkout-open{overflow:hidden}
 
 /* Green WhatsApp contact label in the three-step checkout */
 .checkout-whatsapp-label{color:#25D366!important;font-weight:700}.checkout-whatsapp-label input{margin-top:7px}
+
+/* Visible guest-cart shortcut in the storefront header */
+.cart-nav-link{position:relative;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.cart-nav-link svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.cart-count{position:absolute;top:0;right:0;min-width:17px;height:17px;padding:0 4px;border-radius:20px;background:#520079;color:#fff;font:600 10px/17px var(--sans);text-align:center;box-shadow:0 0 0 2px var(--ivory)}
+.cart-count[hidden]{display:none}
