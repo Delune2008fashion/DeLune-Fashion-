@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const site = "https://delune.qd.je";
+const site = "https://delune2008fashion.github.io/DeLune-Fashion-";
 const api = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_ANON_KEY;
 if (!api || !key) throw new Error("Set SUPABASE_URL and SUPABASE_ANON_KEY repository secrets.");
