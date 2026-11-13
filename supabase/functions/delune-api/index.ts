@@ -8,7 +8,7 @@ Deno.serve(async(req)=>{
  const db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
  const body=await req.json().catch(()=>({})),action=String(body.action||"");
  const bearer=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
- const getActor=async()=>{const {data:{user}}=await db.auth.getUser(bearer);if(!user)throw new Error("Authentication required");const {data:r}=await db.from("user_roles").select("role").eq("user_id",user.id).maybeSingle();return {user,role:r?.role||""}};
+ const getActor=async()=>{if(!bearer)throw new Error("Authentication required");const {data:verified,error:ve}=await db.auth.getClaims(bearer);const subject=verified?.claims?.sub;if(ve||typeof subject!=="string"||!subject)throw new Error("Authentication required");const {data:found,error:ue}=await db.auth.admin.getUserById(subject);if(ue||!found?.user)throw new Error("Authentication required");const user=found.user;const {data:r,error:re}=await db.from("user_roles").select("role").eq("user_id",user.id).maybeSingle();if(re)throw re;return {user,role:r?.role||""}};
  const requireCreator=async()=>{const a=await getActor();if(a.role!=="site_creator")throw new Error("Site Creator permission required");return a};
  try{
   if(action==="create-cart-order"){
