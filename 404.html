@@ -22,7 +22,7 @@
   var clean=path;
   while(clean.length>1&&clean.endsWith("/"))clean=clean.slice(0,-1);
   var routes={"/":"/index.html","/index":"/index.html","/categories":"/categories.html","/about":"/about.html","/contact":"/contact.html","/product":"/product.html","/moderate":"/moderate.html"};
-  var productMatch=clean.match(/^\/products\/([^/]+)$/i);
+  var productMatch=clean.match(/^\/products\/(.+?)(?:\/index\.html)?\/?$/i);
   if(productMatch){
     var productSlug;
     try{productSlug=decodeURIComponent(productMatch[1]);}catch(e){productSlug=productMatch[1];}
