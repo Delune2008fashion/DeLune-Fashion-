@@ -41,7 +41,10 @@ jobs:
               base + '/',
               base + '/categories.html',
               base + '/about.html',
-              base + '/contact.html'
+              base + '/contact.html',
+              base + '/fashion-platform.html',
+              base + '/froyo-collaboration.html',
+              base + '/collections.html'
             ]);
             for (const product of products) {
               if (!product.id || !product.name) continue;
