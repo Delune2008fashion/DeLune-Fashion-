@@ -2,7 +2,29 @@
   const cfg = window.DELUNE_CONFIG || {};
   const configured = cfg.SUPABASE_URL && !cfg.SUPABASE_URL.startsWith("YOUR_") &&
     cfg.SUPABASE_ANON_KEY && !cfg.SUPABASE_ANON_KEY.startsWith("YOUR_");
-  const client = configured && window.supabase ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY) : null;
+  const merchantPortal = /(?:^|\/)merchant\.html$/.test(window.location.pathname);
+  const rememberKey = "delune_merchant_keep_signed_in_v1";
+  const merchantAuthStorage = merchantPortal ? {
+    getItem(key) {
+      const storage = localStorage.getItem(rememberKey) === "true" ? localStorage : sessionStorage;
+      return storage.getItem(key);
+    },
+    setItem(key, value) {
+      const keepSignedIn = localStorage.getItem(rememberKey) === "true";
+      const selectedStorage = keepSignedIn ? localStorage : sessionStorage;
+      const otherStorage = keepSignedIn ? sessionStorage : localStorage;
+      otherStorage.removeItem(key);
+      selectedStorage.setItem(key, value);
+    },
+    removeItem(key) {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    }
+  } : undefined;
+  const client = configured && window.supabase
+    ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY,
+        merchantPortal ? { auth: { storage: merchantAuthStorage } } : undefined)
+    : null;
   const demoProducts = [];
   const demoCategories = [];
   async function products(filters={}) {
