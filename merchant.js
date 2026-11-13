@@ -8,8 +8,66 @@ async function load(){if(isLoading||!user)return;isLoading=true;$("#orders").tex
 function startSharedHistoryRefresh(){if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>{if(user&&document.visibilityState==="visible")load().catch(e=>$("#dashStatus").textContent=e.message)},15000)}
 document.addEventListener("visibilitychange",()=>{if(user&&document.visibilityState==="visible")load().catch(e=>$("#dashStatus").textContent=e.message)});
 window.addEventListener("focus",()=>{if(user)load().catch(e=>$("#dashStatus").textContent=e.message)});
-$("#loginForm").onsubmit=async e=>{e.preventDefault();const msg=$("#loginStatus");msg.textContent="Signing in…";if(!db){msg.textContent="Supabase is not configured.";return}try{const email=$("#email").value.trim();if(!email.includes("@"))throw Error("Enter the Merchant account email address, not the display name or user ID.");const {data,error}=await db.auth.signInWithPassword({email,password:$("#password").value});if(error)throw error;user=data.user;const [{data:r,error:re},{data:m,error:me}]=await Promise.all([db.from("user_roles").select("role").eq("user_id",user.id).maybeSingle(),db.from("merchants").select("display_name,is_active").eq("user_id",user.id).maybeSingle()]);if(re)throw Error("Could not verify Merchant role: "+re.message);if(me)throw Error("Could not load Merchant profile: "+me.message);if(r?.role!=="merchant"||!m?.is_active){await db.auth.signOut();throw Error("Login succeeded, but this account has no active Merchant permission. Check user_roles and merchants for this account UUID.");}$("#merchantName").textContent=m.display_name;$("#login").classList.add("hidden");$("#dashboard").classList.remove("hidden");msg.textContent="";await Promise.all([load(),loadBkashNumbers()]);startSharedHistoryRefresh()}catch(err){msg.textContent=err.message||"Merchant sign-in failed.";}};
-$("#logout").onclick=async()=>{await db.auth.signOut();location.reload()};$("#refresh").onclick=()=>load().catch(e=>$("#dashStatus").textContent=e.message);
+const KEEP_SIGNED_IN_KEY = "delune_merchant_keep_signed_in_v1";
+const keepSignedInInput = $("#keepSignedIn");
+if (keepSignedInInput) {
+  keepSignedInInput.checked = localStorage.getItem(KEEP_SIGNED_IN_KEY) === "true";
+  keepSignedInInput.addEventListener("change", () => {
+    localStorage.setItem(KEEP_SIGNED_IN_KEY, String(keepSignedInInput.checked));
+  });
+}
+
+async function enterMerchantDashboard(merchantUser) {
+  user = merchantUser;
+  const [{ data: roleRow, error: roleError }, { data: merchantProfile, error: merchantError }] = await Promise.all([
+    db.from("user_roles").select("role").eq("user_id", user.id).maybeSingle(),
+    db.from("merchants").select("display_name,is_active").eq("user_id", user.id).maybeSingle()
+  ]);
+  if (roleError) throw Error("Could not verify Merchant role: " + roleError.message);
+  if (merchantError) throw Error("Could not load Merchant profile: " + merchantError.message);
+  if (roleRow?.role !== "merchant" || merchantProfile?.is_active !== true) {
+    await db.auth.signOut();
+    user = null;
+    throw Error("This account has no active Merchant permission.");
+  }
+  $("#merchantName").textContent = merchantProfile.display_name || "Merchant";
+  $("#login").classList.add("hidden");
+  $("#dashboard").classList.remove("hidden");
+  $("#loginStatus").textContent = "";
+  await Promise.all([load(), loadBkashNumbers()]);
+  startSharedHistoryRefresh();
+}
+
+$("#loginForm").onsubmit = async e => {
+  e.preventDefault();
+  const msg = $("#loginStatus");
+  msg.textContent = "Signing in…";
+  if (!db) { msg.textContent = "Supabase is not configured."; return; }
+  try {
+    localStorage.setItem(KEEP_SIGNED_IN_KEY, String(!!keepSignedInInput?.checked));
+    const email = $("#email").value.trim();
+    if (!email.includes("@")) throw Error("Enter the Merchant account email address, not the display name or user ID.");
+    const { data, error } = await db.auth.signInWithPassword({ email, password: $("#password").value });
+    if (error) throw error;
+    await enterMerchantDashboard(data.user);
+  } catch (err) {
+    msg.textContent = err.message || "Merchant sign-in failed.";
+  }
+};
+
+(async () => {
+  if (!db) return;
+  try {
+    const { data, error } = await db.auth.getSession();
+    if (error) throw error;
+    if (data.session?.user) await enterMerchantDashboard(data.session.user);
+  } catch (err) {
+    $("#loginStatus").textContent = err.message || "Could not restore Merchant session. Please sign in again.";
+  }
+})();
+
+$("#logout").onclick = async () => { await db.auth.signOut(); location.reload(); };
+$("#refresh").onclick=()=>load().catch(e=>$("#dashStatus").textContent=e.message);
 document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{activeFilter=b.dataset.filter;document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===b));renderOrders()}));
 
 
