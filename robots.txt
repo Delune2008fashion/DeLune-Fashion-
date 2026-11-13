@@ -1,3 +1,8 @@
 User-agent: *
 Allow: /
-Sitemap: https://delune2008fashion.github.io/DeLune-Fashion-/sitemap.xml
+Disallow: /cart.html
+Disallow: /checkout.html
+Disallow: /merchant.html
+Disallow: /moderate.html
+Disallow: /accept-invitation.html
+Sitemap: https://delune.qd.je/sitemap.xml
