@@ -75,17 +75,8 @@ Deno.serve(async(req)=>{
    const orderId=String(body.order_id||"");const {data:o,error:oe}=await db.from("orders").select("*").eq("id",orderId).single();if(oe||!o)throw new Error("Order not found.");
    
    const a=String(body.operation||"");
-   if(a==="delete-my-history"){if(role!=="merchant")throw new Error("Only active Merchant accounts can permanently remove order history.");const deletedAt=new Date().toISOString();const {error}=await db.from("orders").update({merchant_hidden_from_all_at:deletedAt,updated_at:deletedAt}).eq("id",orderId);if(error)throw error;const {error:ae}=await db.from("audit_logs").insert({actor_id:user.id,action:"merchant_global_order_history_deleted",entity_type:"order",entity_id:orderId,details:{order_code:o.order_code,scope:"all_merchants",permanent:true,financial_records_retained:true}});if(ae)throw ae;return out({success:true,message:"Order permanently removed from every Merchant history. Payment and transaction records are retained."});}
-   if(a==="mark-shipped"){if(!["confirmed","processing"].includes(o.order_status))throw new Error("Only confirmed orders can be marked as shipped.");const u=await db.from("orders").update({order_status:"shipped",updated_at:new Date().toISOString()}).eq("id",orderId);if(u.error)throw u.error;await db.from("audit_logs").insert({actor_id:user.id,action:"order_marked_shipped",entity_type:"order",entity_id:orderId,details:{order_code:o.order_code}});return out({success:true});}
-   if(a==="confirm"||a==="reject"){
-    if(a==="confirm"&&o.order_status!=="payment_pending"&&o.order_status!=="payment_not_confirmed")throw new Error("This order cannot be confirmed from its current status.");if(a==="reject"&&o.order_status!=="payment_pending")throw new Error("This order is no longer awaiting payment verification.");
-    const status=a==="confirm"?"confirmed":"not_confirmed",orderStatus=a==="confirm"?"confirmed":"payment_not_confirmed";
-    const p=await db.from("payments").update({status,verified_by:user.id,verified_at:new Date().toISOString()}).eq("order_id",orderId);if(p.error)throw p.error;
-    const t=await db.from("transactions").update({status}).eq("order_id",orderId);if(t.error)throw t.error;
-    const u=await db.from("orders").update({order_status:orderStatus,updated_at:new Date().toISOString()}).eq("id",orderId);if(u.error)throw u.error;
-    await db.from("audit_logs").insert({actor_id:user.id,action:"payment_"+a,entity_type:"order",entity_id:orderId,details:{order_code:o.order_code}});
-    return out({success:true,phone:o.customer_phone,customer_name:o.customer_name,order_code:o.order_code});
-   }
+   if(a==="delete-my-history"||a==="hide-order"){if(role!=="merchant")throw new Error("Only active Merchant accounts can remove order history.");const historyFilter=a==="delete-my-history"?"all":String(body.history_filter||"all");if(!["all","shipped"].includes(historyFilter))throw new Error("Choose All or Shipped history.");if(historyFilter==="shipped"&&o.order_status!=="shipped")throw new Error("Only shipped orders can be removed from Shipped history.");const field=historyFilter==="all"?"merchant_hidden_from_all_at":"merchant_hidden_from_shipped_at";const hiddenAt=new Date().toISOString();const {error}=await db.from("orders").update({[field]:hiddenAt,updated_at:hiddenAt}).eq("id",orderId);if(error)throw error;const {error:ae}=await db.from("audit_logs").insert({actor_id:user.id,action:"merchant_order_history_hidden",entity_type:"order",entity_id:orderId,details:{order_code:o.order_code,scope:historyFilter,financial_records_retained:true}});if(ae)throw ae;return out({success:true,message:historyFilter==="shipped"?"Order removed from every Merchant's Shipped history.":"Order removed from every Merchant's All history. Order and payment records are retained."});}
+   if(["confirm","reject","mark-shipped"].includes(a)){const {data:result,error}=await db.rpc("merchant_update_order_status",{p_order_id:orderId,p_actor_id:user.id,p_action:a});if(error)throw error;return out({success:true,...(result||{}),phone:o.customer_phone,customer_name:o.customer_name,order_code:o.order_code});}
    if(a==="notify-now"||a==="queue"){
     const type=String(body.message_type||"not_confirmed");
     const confirmed=["processing","confirmed","shipped","delivered","completed"].includes(o.order_status);
@@ -99,5 +90,5 @@ Deno.serve(async(req)=>{
    throw new Error("Unsupported merchant action.");
   }
   throw new Error("Unknown action.");
- }catch(e){return out({success:false,message:e.message||"Request failed."})}
+ }catch(e){console.error("delune-api request failed",{action,operation:body.operation||"",message:e.message||"Request failed."});return out({success:false,message:e.message||"Request failed."})}
 });
