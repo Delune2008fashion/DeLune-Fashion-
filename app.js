@@ -77,7 +77,7 @@ async function renderProduct(){
      else{const number=String(window.DELUNE_CONFIG?.WHATSAPP_NUMBER||"").replace(/\D/g,"");if(!number){alert("WhatsApp ordering is not configured yet.");return}window.open("https://wa.me/"+number+"?text="+encodeURIComponent(msg),"_blank","noopener")}
      close();return;
     }
-    if(e.target.closest(".checkout-online")){sessionStorage.setItem("delune_checkout_customer",JSON.stringify(customer));const url=new URL("checkout.html",location.href);url.searchParams.set("product_id",p.id);url.searchParams.set("quantity",String(quantity));url.searchParams.set("size",selected);window.location.href=url.href}
+    if(e.target.closest(".checkout-online")){sessionStorage.setItem("delune_checkout_customer",JSON.stringify(customer));const url=new URL("/DeLune-Fashion-/checkout.html",location.origin);url.searchParams.set("product_id",p.id);url.searchParams.set("quantity",String(quantity));url.searchParams.set("size",selected);window.location.href=url.href}
    });
    content.addEventListener("submit",e=>{if(!e.target.matches(".checkout-form"))return;e.preventDefault();const fd=new FormData(e.target);customer={name:String(fd.get("name")||"").trim(),phone:String(fd.get("phone")||"").trim(),address:String(fd.get("address")||"").trim(),district:String(fd.get("district")||"").trim()};if(!customer.name||!customer.phone||!customer.address||!customer.district)return;step=3;paint()});
   }
