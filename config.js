@@ -4,5 +4,5 @@ window.DELUNE_CONFIG = {
   MESSENGER_URL: "https://m.me/1251130614753409",
   CONTACT_EMAIL: "delune2008@gmail.com",
   WHATSAPP_NUMBER: "8801750473964",
-  BKASH_NUMBER: "+8801875312169" // provisional recipient; editable later in Site Creator dashboard
+  BKASH_NUMBER: "+8801534355603" // current bKash recipient
 };
