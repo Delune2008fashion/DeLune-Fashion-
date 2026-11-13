@@ -1,0 +1,71 @@
+name: Refresh product sitemap
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 2 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Generate sitemap from published products
+        env:
+          SUPABASE_URL: https://mxbogsdrsrftbxwxslrj.supabase.co
+          SUPABASE_ANON_KEY: sb_publishable_T3VhMypEjJwWIeJetFwTPQ_6Th1j7-v
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const base = 'https://delune2008fashion.github.io/DeLune-Fashion-';
+          const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+          const slugify = (value) => String(value || 'product').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 100) || 'product';
+
+          async function main() {
+            const endpoint = new URL('/rest/v1/products', process.env.SUPABASE_URL);
+            endpoint.searchParams.set('select', 'id,name,slug,is_published');
+            endpoint.searchParams.set('is_published', 'eq.true');
+            endpoint.searchParams.set('order', 'created_at.desc');
+            const response = await fetch(endpoint, {
+              headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + process.env.SUPABASE_ANON_KEY }
+            });
+            if (!response.ok) throw new Error('Supabase products query failed: ' + response.status + ' ' + await response.text());
+            const products = await response.json();
+            if (!Array.isArray(products)) throw new Error('Unexpected products response');
+            const urls = new Set([
+              base + '/',
+              base + '/categories.html',
+              base + '/about.html',
+              base + '/contact.html'
+            ]);
+            for (const product of products) {
+              if (!product.id || !product.name) continue;
+              const slug = product.slug || (slugify(product.name) + '-' + String(product.id).slice(0, 8));
+              urls.add(base + '/products/' + encodeURIComponent(slug) + '/');
+            }
+            const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+              [...urls].sort().map(url => '  <url><loc>' + esc(url) + '</loc></url>').join('\n') +
+              '\n</urlset>\n';
+            fs.writeFileSync('sitemap.xml', xml);
+            console.log('Generated sitemap with ' + urls.size + ' URLs (' + products.length + ' published products returned).');
+          }
+          main().catch(error => { console.error(error); process.exit(1); });
+          NODE
+
+      - name: Commit updated sitemap
+        run: |
+          if git diff --quiet -- sitemap.xml; then
+            echo "Sitemap is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sitemap.xml
+          git commit -m "chore: refresh sitemap from published products"
+          git push
