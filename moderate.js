@@ -121,7 +121,10 @@ $("#adminProducts").addEventListener("click",async e=>{
   }
   if(del&&confirm("Delete this product?")){const {error}=await db.from("products").delete().eq("id",del.dataset.delete);status("#productStatus",error?.message||"Product deleted.");await loadProducts()}
 });
-function resetCategoryForm(){ $("#categoryForm").reset();$("#cId").value="";$("#saveCategoryBtn").textContent="Add department"; }
+let categoryCreateMode="department";
+function setCategoryCreateMode(mode,parentId=""){categoryCreateMode=mode;$("#cId").value="";$("#categoryForm").reset();$("#cId").value="";$("#cParent").value=parentId;$("#cParent").required=mode==="subcategory";$("#cParentLabel").textContent=mode==="subcategory"?"Parent department (required)":"Parent department (optional for a main department)";$("#cParentHelp").textContent=mode==="subcategory"?"Select the main department this subcategory belongs to.":"Leave empty to create a main department. Choose a parent to create a subdepartment.";$("#saveCategoryBtn").textContent=mode==="subcategory"?"Create subcategory":"Add department";}
+function resetCategoryForm(){ $("#categoryForm").reset();$("#cId").value="";setCategoryCreateMode("department");$("#saveCategoryBtn").textContent="Add department"; }
+$("#startSubcategory").addEventListener("click",()=>{setCategoryCreateMode("subcategory");$("#categoryForm").scrollIntoView({behavior:"smooth",block:"center"});$("#cParent").focus()});
 $("#resetCategory").addEventListener("click",resetCategoryForm);
 $("#cImageFile").addEventListener("change",e=>$("#cImageFileName").textContent=e.target.files[0]?.name||"No category photo selected.");
 $("#bannerFile").addEventListener("change",e=>$("#bannerFileName").textContent=e.target.files[0]?.name||"No banner image selected.");
@@ -135,7 +138,7 @@ $("#categoryForm").addEventListener("submit",async e=>{
   try{
    if(!name||!requestedSlug)throw new Error("Enter a department name and URL slug.");
    // Slugs are globally unique in the database. Generate the next free slug instead of failing with SQL 23505.
-   const {data:matches,error:slugError}=await db.from("categories").select("id,slug").eq("slug",requestedSlug);
+   const {data:matches,error:slugError}=await db.from("categories").select("id,slug");
    if(slugError)throw slugError;
    let slug=requestedSlug, suffix=2;
    while((matches||[]).some(row=>String(row.id)!==String(id)&&row.slug===slug)){
@@ -143,7 +146,7 @@ $("#categoryForm").addEventListener("submit",async e=>{
    }
    if(slug!==requestedSlug)$("#cSlug").value=slug;
    const uploaded=await uploadSingleImage("#cImageFile");
-   const payload={name,slug,parent_id:$("#cParent")?.value||null,sort_order:categories.find(c=>c.id===id)?.sort_order??categories.length,is_visible:true};
+   const selectedParent=$("#cParent").value.trim();if(categoryCreateMode==="subcategory"&&!selectedParent)throw new Error("Choose a parent department before creating a subcategory.");if(selectedParent&&!categories.some(c=>String(c.id)===selectedParent&&!c.parent_id))throw new Error("Choose a valid main department as the parent.");const payload={name,slug,parent_id:selectedParent||null,sort_order:categories.find(c=>c.id===id)?.sort_order??categories.length,is_visible:true};
    if(payload.parent_id===id)throw new Error("A department cannot be its own subdepartment.");
    const typedUrl=$("#cImage").value.trim();if(uploaded||typedUrl)payload.image_url=uploaded||typedUrl;
    const result=id?await db.from("categories").update(payload).eq("id",id):await db.from("categories").insert({...payload,image_url:payload.image_url||null});
@@ -159,7 +162,7 @@ $("#categoryForm").addEventListener("submit",async e=>{
 $("#adminCategories").addEventListener("click",async e=>{
   const edit=e.target.closest("[data-edit-category]"),del=e.target.closest("[data-delete-category]");
   if(edit){const c=categories.find(x=>String(x.id)===edit.dataset.editCategory);if(!c)return;
-   $("#cId").value=c.id;$("#cName").value=c.name;$("#cSlug").value=c.slug;$("#cParent").value=c.parent_id||"";$("#cImage").value=c.image_url||"";$("#saveCategoryBtn").textContent="Update category";window.scrollTo({top:$("#categoryForm").getBoundingClientRect().top+window.scrollY-90,behavior:"smooth"});return;
+   $("#cId").value=c.id;$("#cName").value=c.name;$("#cSlug").value=c.slug;$("#cParent").value=c.parent_id||"";$("#cImage").value=c.image_url||"";categoryCreateMode=c.parent_id?"subcategory":"department";$("#cParent").required=!!c.parent_id;$("#cParentLabel").textContent=c.parent_id?"Parent department (required)":"Parent department (optional for a main department)";$("#cParentHelp").textContent=c.parent_id?"Select the main department this subcategory belongs to.":"Leave empty to create a main department. Choose a parent to create a subdepartment.";$("#saveCategoryBtn").textContent="Update department";window.scrollTo({top:$("#categoryForm").getBoundingClientRect().top+window.scrollY-90,behavior:"smooth"});return;
   }
   if(!del||!confirm("Delete this category? Its products will be kept and moved to the moderator-only Uncategorized group."))return;
   const category=categories.find(c=>String(c.id)===del.dataset.deleteCategory||c.slug===del.dataset.deleteCategory);if(!category)return;
