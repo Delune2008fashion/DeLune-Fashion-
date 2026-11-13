@@ -144,6 +144,22 @@
         if (merchantError) throw merchantError;
         if (merchant?.is_active !== true) return;
       }
+
+      // Prepare the service worker automatically after an authorized merchant signs in.
+      // Browser notification permission remains controlled by the user/browser.
+      try {
+        await getNotificationRegistration();
+        if ("Notification" in window && Notification.permission === "granted") {
+          status.textContent = "Notifications active. Live order alerts connected.";
+        } else if ("Notification" in window && Notification.permission === "default") {
+          status.textContent = "Live order alerts connected. Tap Allow notifications once to enable phone alerts.";
+        } else if ("Notification" in window && Notification.permission === "denied") {
+          status.textContent = "Live order alerts connected. Phone notifications are blocked in browser site settings.";
+        }
+      } catch (registrationError) {
+        console.warn("[DeLune notifications] Service worker preparation failed", registrationError);
+      }
+
       channel = db.channel("delune-merchant-order-alerts-" + user.id)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, handleNewOrder)
         .subscribe(subscriptionState => {
