@@ -36,10 +36,13 @@ function seoDefaults(){const name=$("#pName").value.trim()||"Product";const desc
 function updateSEOPreview(){const d=seoDefaults(),id=$("#productId").value.trim(),slug=d.slug+(id?"-"+id.slice(0,8):"-auto"),title=$("#pSeoTitle").value.trim()||d.title,description=$("#pSeoDescription").value.trim()||d.description;$("#seoPreviewTitle").textContent=title;$("#seoPreviewUrl").textContent="https://delune.qd.je/products/"+slug+"/";$("#seoPreviewDescription").textContent=description;}
 ["#pName","#pDescription","#pPrice","#pSeoTitle","#pSeoDescription"].forEach(sel=>$(sel)?.addEventListener("input",updateSEOPreview));
 async function loadCategories(){
-  categories=await DeLuneStore.categories();
-  $("#pCategory").innerHTML=`<option value="uncategorized">Uncategorized (moderator only)</option>`+categories.map(c=>`<option value="${c.slug}">${c.parent_id?"↳ ":""}${c.name}</option>`).join("");
-  const parent=$("#cParent");if(parent)parent.innerHTML=`<option value="">Top-level category</option>`+categories.filter(c=>!c.parent_id).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
-  $("#adminCategories").innerHTML=categories.map(c=>`<div class="admin-item"><div class="admin-item-main">${c.image_url?`<img class="admin-thumb" src="${c.image_url}" alt="${c.name.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">`:`<div class="admin-thumb" aria-label="No category photo"></div>`}<div class="admin-item-copy"><strong>${c.name}</strong><small>${c.parent_id?"Subcategory · ":"Category · "}${c.slug}</small></div></div><div class="admin-actions"><button class="admin-button secondary" data-edit-category="${c.id}">Edit</button><button class="admin-button secondary" data-delete-category="${c.id||c.slug}">Delete</button></div></div>`).join("");
+  // Moderator must see every department, including hidden ones; the public store helper filters hidden rows.
+  const {data,error}=await db.from("categories").select("*").order("sort_order",{ascending:true}).order("name",{ascending:true});
+  if(error)throw error;
+  categories=data||[];
+  $("#pCategory").innerHTML=`<option value="uncategorized">Uncategorized (moderator only)</option>`+categories.filter(c=>c.is_visible!==false).map(c=>`<option value="${c.slug}">${c.parent_id?"↳ ":""}${c.name}</option>`).join("");
+  const parent=$("#cParent");if(parent)parent.innerHTML=`<option value="">Top-level department</option>`+categories.filter(c=>!c.parent_id).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+  $("#adminCategories").innerHTML=categories.map(c=>`<div class="admin-item"><div class="admin-item-main">${c.image_url?`<img class="admin-thumb" src="${c.image_url}" alt="${c.name.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">`:`<div class="admin-thumb" aria-label="No department photo"></div>`}<div class="admin-item-copy"><strong>${c.name}</strong><small>${c.parent_id?"Subdepartment · ":"Department · "}${c.slug}${c.is_visible===false?" · Hidden":""}</small></div></div><div class="admin-actions"><button type="button" class="admin-button secondary" data-edit-category="${c.id}">Edit</button><button type="button" class="admin-button secondary" data-delete-category="${c.id||c.slug}">Delete</button></div></div>`).join("")||"No departments yet.";
 }
 async function loadProducts(){
   const ps=await DeLuneStore.products({availableOnly:false});
@@ -118,25 +121,48 @@ $("#adminProducts").addEventListener("click",async e=>{
   }
   if(del&&confirm("Delete this product?")){const {error}=await db.from("products").delete().eq("id",del.dataset.delete);status("#productStatus",error?.message||"Product deleted.");await loadProducts()}
 });
-function resetCategoryForm(){ $("#categoryForm").reset();$("#cId").value="";$("#saveCategoryBtn").textContent="Add category"; }
+let categoryCreateMode="department";
+function setCategoryCreateMode(mode,parentId=""){categoryCreateMode=mode;$("#cId").value="";$("#categoryForm").reset();$("#cId").value="";$("#cParent").value=parentId;$("#cParent").required=mode==="subcategory";$("#cParentLabel").textContent=mode==="subcategory"?"Parent department (required)":"Parent department (optional for a main department)";$("#cParentHelp").textContent=mode==="subcategory"?"Select the main department this subcategory belongs to.":"Leave empty to create a main department. Choose a parent to create a subdepartment.";$("#saveCategoryBtn").textContent=mode==="subcategory"?"Create subcategory":"Add department";}
+function resetCategoryForm(){ $("#categoryForm").reset();$("#cId").value="";setCategoryCreateMode("department");$("#saveCategoryBtn").textContent="Add department"; }
+$("#startSubcategory").addEventListener("click",()=>{setCategoryCreateMode("subcategory");$("#categoryForm").scrollIntoView({behavior:"smooth",block:"center"});$("#cParent").focus()});
 $("#resetCategory").addEventListener("click",resetCategoryForm);
 $("#cImageFile").addEventListener("change",e=>$("#cImageFileName").textContent=e.target.files[0]?.name||"No category photo selected.");
 $("#bannerFile").addEventListener("change",e=>$("#bannerFileName").textContent=e.target.files[0]?.name||"No banner image selected.");
 $("#categoryForm").addEventListener("submit",async e=>{
-  e.preventDefault();const id=$("#cId").value,name=$("#cName").value.trim(),slug=$("#cSlug").value.trim()||slugify(name);
+  e.preventDefault();
+  if(!db||!currentUser){status("#categoryStatus","Moderator session expired. Sign in again.");return}
+  const button=$("#saveCategoryBtn");
+  if(button.disabled)return;
+  button.disabled=true;
+  const id=$("#cId").value,name=$("#cName").value.trim(),requestedSlug=$("#cSlug").value.trim()||slugify(name);
   try{
+   if(!name||!requestedSlug)throw new Error("Enter a department name and URL slug.");
+   // Slugs are globally unique in the database. Generate the next free slug instead of failing with SQL 23505.
+   const {data:matches,error:slugError}=await db.from("categories").select("id,slug");
+   if(slugError)throw slugError;
+   let slug=requestedSlug, suffix=2;
+   while((matches||[]).some(row=>String(row.id)!==String(id)&&row.slug===slug)){
+     slug=requestedSlug+"-"+suffix++;
+   }
+   if(slug!==requestedSlug)$("#cSlug").value=slug;
    const uploaded=await uploadSingleImage("#cImageFile");
-   const payload={name,slug,parent_id:$("#cParent")?.value||null,sort_order:categories.find(c=>c.id===id)?.sort_order??categories.length,is_visible:true};
+   const selectedParent=$("#cParent").value.trim();if(categoryCreateMode==="subcategory"&&!selectedParent)throw new Error("Choose a parent department before creating a subcategory.");if(selectedParent&&!categories.some(c=>String(c.id)===selectedParent&&!c.parent_id))throw new Error("Choose a valid main department as the parent.");const payload={name,slug,parent_id:selectedParent||null,sort_order:categories.find(c=>c.id===id)?.sort_order??categories.length,is_visible:true};
+   if(payload.parent_id===id)throw new Error("A department cannot be its own subdepartment.");
    const typedUrl=$("#cImage").value.trim();if(uploaded||typedUrl)payload.image_url=uploaded||typedUrl;
    const result=id?await db.from("categories").update(payload).eq("id",id):await db.from("categories").insert({...payload,image_url:payload.image_url||null});
-   if(result.error)throw result.error;
-   status("#categoryStatus",id?"Category updated.":"Category added.");resetCategoryForm();await loadCategories();
-  }catch(err){status("#categoryStatus",err.message||"Could not save category or upload its image.")}
+   if(result.error){
+     if(result.error.code==="23505")throw new Error("This department URL is already in use. Please use a different slug.");
+     throw result.error;
+   }
+   status("#categoryStatus",id?"Department updated successfully.":"Department created successfully.");
+   resetCategoryForm();await loadCategories();
+  }catch(err){status("#categoryStatus",err.message==="Failed to fetch"?"Connection failed while saving. Check your internet connection, then retry.":(err.message||"Could not save department."))}
+  finally{button.disabled=false}
 });
 $("#adminCategories").addEventListener("click",async e=>{
   const edit=e.target.closest("[data-edit-category]"),del=e.target.closest("[data-delete-category]");
   if(edit){const c=categories.find(x=>String(x.id)===edit.dataset.editCategory);if(!c)return;
-   $("#cId").value=c.id;$("#cName").value=c.name;$("#cSlug").value=c.slug;$("#cParent").value=c.parent_id||"";$("#cImage").value=c.image_url||"";$("#saveCategoryBtn").textContent="Update category";window.scrollTo({top:$("#categoryForm").getBoundingClientRect().top+window.scrollY-90,behavior:"smooth"});return;
+   $("#cId").value=c.id;$("#cName").value=c.name;$("#cSlug").value=c.slug;$("#cParent").value=c.parent_id||"";$("#cImage").value=c.image_url||"";categoryCreateMode=c.parent_id?"subcategory":"department";$("#cParent").required=!!c.parent_id;$("#cParentLabel").textContent=c.parent_id?"Parent department (required)":"Parent department (optional for a main department)";$("#cParentHelp").textContent=c.parent_id?"Select the main department this subcategory belongs to.":"Leave empty to create a main department. Choose a parent to create a subdepartment.";$("#saveCategoryBtn").textContent="Update department";window.scrollTo({top:$("#categoryForm").getBoundingClientRect().top+window.scrollY-90,behavior:"smooth"});return;
   }
   if(!del||!confirm("Delete this category? Its products will be kept and moved to the moderator-only Uncategorized group."))return;
   const category=categories.find(c=>String(c.id)===del.dataset.deleteCategory||c.slug===del.dataset.deleteCategory);if(!category)return;
