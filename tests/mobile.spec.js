@@ -43,3 +43,21 @@ test("moderator page presents sign-in, not the dashboard, to a signed-out visito
   await expect(page.locator("#loginPanel")).toBeVisible();
   await expect(page.locator("#dashboard")).toBeHidden();
 });
+
+test("merchant keep-me-signed-in preference is visible and remembered", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/merchant.html");
+  const remember = page.getByRole("checkbox", { name: /keep me signed in/i });
+  await expect(remember).toBeVisible();
+  await expect(remember).not.toBeChecked();
+  await remember.check();
+  await page.reload();
+  await expect(page.getByRole("checkbox", { name: /keep me signed in/i })).toBeChecked();
+  await page.getByRole("checkbox", { name: /keep me signed in/i }).uncheck();
+  await page.reload();
+  await expect(page.getByRole("checkbox", { name: /keep me signed in/i })).not.toBeChecked();
+  const overflow = await page.evaluate(() =>
+    document.documentElement.scrollWidth - document.documentElement.clientWidth
+  );
+  expect(overflow, "Merchant login should fit a 320px viewport").toBeLessThanOrEqual(2);
+});
