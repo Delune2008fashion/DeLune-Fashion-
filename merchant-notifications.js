@@ -10,6 +10,7 @@
   let channel = null;
   let audioContext = null;
   let toastTimer = null;
+  let notificationRegistration = null;
   const seenOrders = new Set();
 
   function setPermissionLabel() {
@@ -66,23 +67,36 @@
     }
   }
 
-  function sendSystemNotification(title, body, tag) {
+  async function getNotificationRegistration() {
+    if (!("serviceWorker" in navigator)) throw new Error("This browser does not support service workers.");
+    if (!notificationRegistration) {
+      notificationRegistration = await navigator.serviceWorker.register(
+        "/DeLune-Fashion-/merchant-notification-sw.js",
+        { scope: "/DeLune-Fashion-/" }
+      );
+    }
+    await navigator.serviceWorker.ready;
+    return notificationRegistration;
+  }
+
+  async function sendSystemNotification(title, body, tag) {
     if (!("Notification" in window) || Notification.permission !== "granted") return false;
     try {
-      const notification = new Notification(title, {
+      const registration = await getNotificationRegistration();
+      if (typeof registration.showNotification !== "function")
+        throw new Error("This browser does not support service-worker notifications.");
+      await registration.showNotification(title, {
         body,
         icon: "/DeLune-Fashion-/logo.png",
+        badge: "/DeLune-Fashion-/logo.png",
         tag,
-        renotify: false
+        renotify: false,
+        data: { url: "/DeLune-Fashion-/merchant.html" }
       });
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
-        document.getElementById("orders")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      };
       return true;
     } catch (error) {
       console.warn("[DeLune notifications] System notification unavailable", error);
+      status.textContent = "Phone notification failed: " + (error.message || "Browser blocked it");
       return false;
     }
   }
@@ -108,7 +122,7 @@
       : "Open Merchant Panel to view details.";
     showToast(orderCode, items);
     playAlertTone();
-    sendSystemNotification("New DeLune order", orderCode + " — " + itemSummary, "delune-order-" + order.id);
+    await sendSystemNotification("New DeLune order", orderCode + " — " + itemSummary, "delune-order-" + order.id);
   }
 
   async function connectForUser(session) {
@@ -155,12 +169,13 @@
     try {
       const permission = await Notification.requestPermission();
       if (permission === "granted") {
+        await getNotificationRegistration();
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (AudioContextClass) {
           audioContext = audioContext || new AudioContextClass();
           await audioContext.resume();
         }
-        status.textContent = "Notifications allowed. Use Test notification to check them. Keep Merchant Panel open for live order alerts.";
+        status.textContent = "Notifications allowed and service worker ready. Use Test notification to check your phone.";
       } else {
         status.textContent = "Permission was not granted. You can try again with Allow notifications; in-panel alerts still work.";
       }
@@ -178,9 +193,9 @@
       return;
     }
     if (Notification.permission === "granted") {
-      const sent = sendSystemNotification("DeLune test notification", "Your Merchant Panel notifications are working.", "delune-test-notification");
+      const sent = await sendSystemNotification("DeLune test notification", "Your Merchant Panel notifications are working.", "delune-test-notification");
       status.textContent = sent
-        ? "Test sent — check your browser/device notification area."
+        ? "Test sent — check your phone notification shade."
         : "In-panel test shown, but the system notification could not be displayed.";
     } else {
       status.textContent = "In-panel test shown. Tap Allow notifications first to test system notifications.";
