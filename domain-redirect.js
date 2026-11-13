@@ -7,7 +7,7 @@
   while(clean.length>1&&clean.endsWith("/"))clean=clean.slice(0,-1);
   var routes={"/":"/index.html","/index":"/index.html","/categories":"/categories.html","/about":"/about.html","/contact":"/contact.html","/product":"/product.html","/moderate":"/moderate.html"};
   var base="https://delune2008fashion.github.io/DeLune-Fashion-";
-  var match=clean.match(/^\\/products\\/(.+?)(?:\\/index\\.html)?\\/?$/i);
+  var match=clean.match(/^\/products\/(.+?)(?:\/index\.html)?\/?$/i);
   if(match){
     var slug=match[1].split("/")[0];
     try{slug=decodeURIComponent(slug)}catch(e){}
