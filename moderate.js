@@ -190,8 +190,11 @@ $("#productForm").addEventListener("submit",async e=>{
     const res=id?await db.from("products").update(payload).eq("id",id):await db.from("products").insert({...payload,created_by:currentUser.id});
     if(res.error)throw res.error;
     const removedImages=previousImages.filter(url=>!imageUrls.includes(url));
-    await removeProductStorageImages(removedImages);
-    status("#productStatus",payload.is_published?"Product saved. Its SEO page and sitemap entry refresh on the next SEO deployment (about 10 minutes).":"Product saved as a draft. It will stay out of the storefront and sitemap until published.");
+    const cleanupFailures=await removeProductStorageImages(removedImages);
+    const baseMessage=payload.is_published?"Product saved. Its SEO page and sitemap entry refresh on the next SEO deployment (about 10 minutes).":"Product saved as a draft. It will stay out of the storefront and sitemap until published.";
+    status("#productStatus",cleanupFailures.length
+      ?baseMessage+" WARNING: "+cleanupFailures.length+" image(s) could not be removed from Supabase Storage. "+cleanupFailures.map(x=>x.error).join("; ")
+      :baseMessage+(removedImages.length?" Removed unused Supabase image file(s).":""));
     reset();await loadProducts();
   }catch(err){status("#productStatus",err.message||"Could not save product.")}
 });
