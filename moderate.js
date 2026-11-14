@@ -42,12 +42,37 @@ async function loadCategories(){
   categories=data||[];
   $("#pCategory").innerHTML=`<option value="uncategorized">Uncategorized (moderator only)</option>`+categories.filter(c=>c.is_visible!==false).map(c=>`<option value="${c.slug}">${c.parent_id?"↳ ":""}${c.name}</option>`).join("");
   const parent=$("#cParent");if(parent)parent.innerHTML=`<option value="">Top-level department</option>`+categories.filter(c=>!c.parent_id).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+  const manageDepartment=$("#manageDepartmentFilter");if(manageDepartment){const previous=manageDepartment.value;manageDepartment.innerHTML=`<option value="">All departments</option>`+categories.filter(c=>!c.parent_id).map(c=>`<option value="${c.slug}">${c.name}</option>`).join("");if(categories.some(c=>!c.parent_id&&c.slug===previous))manageDepartment.value=previous;}
   $("#adminCategories").innerHTML=categories.map(c=>`<div class="admin-item"><div class="admin-item-main">${c.image_url?`<img class="admin-thumb" src="${c.image_url}" alt="${c.name.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">`:`<div class="admin-thumb" aria-label="No department photo"></div>`}<div class="admin-item-copy"><strong>${c.name}</strong><small>${c.parent_id?"Subdepartment · ":"Department · "}${c.slug}${c.is_visible===false?" · Hidden":""}</small></div></div><div class="admin-actions"><button type="button" class="admin-button secondary" data-edit-category="${c.id}">Edit</button><button type="button" class="admin-button secondary" data-delete-category="${c.id||c.slug}">Delete</button></div></div>`).join("")||"No departments yet.";
 }
-async function loadProducts(){
-  const ps=await DeLuneStore.products({availableOnly:false});
-  $("#adminProducts").innerHTML=ps.map(p=>{const img=(p.image_urls||[])[0]||"";return `<div class="admin-item"><div class="admin-item-main">${img?`<img class="admin-thumb" src="${img}" alt="${p.name.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">`:`<div class="admin-thumb" aria-label="No product photo"></div>`}<div class="admin-item-copy"><strong>${p.name}</strong><small>${money(p.price)} · ${p.category==="uncategorized"?"Uncategorized (moderator only)":p.category} · ${p.available?"In stock":"Out of stock"} · ${p.is_published?"Published":"Draft"}</small></div></div><div class="admin-actions"><button class="admin-button secondary" data-edit="${p.id}">Edit</button><button class="admin-button secondary" data-delete="${p.id}">Delete</button></div></div>`}).join("")||"No products yet.";
+let allAdminProducts=[];
+function renderAdminProducts(){
+  const department=$("#manageDepartmentFilter")?.value||"";
+  const subdepartment=$("#manageSubdepartmentFilter")?.value||"";
+  const childRows=categories.filter(c=>c.parent_id&&categories.some(p=>p.id===c.parent_id&&(!department||p.slug===department)));
+  const allowed=new Set();
+  if(department){allowed.add(department);childRows.forEach(c=>allowed.add(c.slug));}
+  let ps=allAdminProducts;
+  if(department)ps=ps.filter(p=>allowed.has(p.category));
+  if(subdepartment)ps=ps.filter(p=>p.category===subdepartment);
+  $("#adminProducts").innerHTML=ps.map(p=>{const img=(p.image_urls||[])[0]||"";return `<div class="admin-item"><div class="admin-item-main">${img?`<img class="admin-thumb" src="${img}" alt="${p.name.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">`:`<div class="admin-thumb" aria-label="No product photo"></div>`}<div class="admin-item-copy"><strong>${p.name}</strong><small>${money(p.price)} · ${p.category==="uncategorized"?"Uncategorized (moderator only)":p.category} · ${p.available?"In stock":"Out of stock"} · ${p.is_published?"Published":"Draft"}</small></div></div><div class="admin-actions"><button class="admin-button secondary" data-edit="${p.id}">Edit</button><button class="admin-button secondary" data-delete="${p.id}">Delete</button></div></div>`}).join("")||"No products match these filters.";
 }
+function updateManageSubdepartments(){
+  const department=$("#manageDepartmentFilter")?.value||"";
+  const select=$("#manageSubdepartmentFilter");
+  if(!select)return;
+  const previous=select.value;
+  const children=categories.filter(c=>c.parent_id&&categories.some(p=>p.id===c.parent_id&&(!department||p.slug===department)));
+  select.innerHTML='<option value="">All subdepartments</option>'+children.map(c=>'<option value="'+c.slug.replace(/&/g,"&amp;").replace(/"/g,"&quot;")+'">'+c.name.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;")+'</option>').join("");
+  if(children.some(c=>c.slug===previous))select.value=previous;
+}
+async function loadProducts(){
+  allAdminProducts=await DeLuneStore.products({availableOnly:false});
+  updateManageSubdepartments();
+  renderAdminProducts();
+}
+$("#manageDepartmentFilter")?.addEventListener("change",()=>{updateManageSubdepartments();renderAdminProducts();});
+$("#manageSubdepartmentFilter")?.addEventListener("change",renderAdminProducts);
 async function refresh(){await Promise.all([loadCategories(),loadProducts(),loadSeoKeywordLibrary(),loadBannerImages()]);await fetchPageTexts();await renderTextFields()}
 const PAGE_TEXT_FIELDS={"index":[[".announcement","Announcement bar"],[".hero-copy .eyebrow","Hero eyebrow"],[".hero-copy h1","Hero heading"],[".hero-description","Hero description"],[".hero-copy .button-dark","Hero button"],[".intro-strip span:nth-child(1)","Intro line 1"],[".intro-strip span:nth-child(2)","Intro line 2"],[".intro-strip span:nth-child(3)","Intro line 3"],[".exclusive-section .section-heading .eyebrow","Exclusive eyebrow"],[".exclusive-section .section-heading h2","Exclusive heading"],[".exclusive-section .section-heading .underlined-link","View products label"],[".category-section .section-heading .eyebrow","Category eyebrow"],[".category-section .section-heading h2","Category heading"],[".category-section .section-note","Category description"],[".brand-note .eyebrow","Brand note eyebrow"],[".brand-note h2","Brand note heading"],[".brand-note .underlined-link","Brand note link"]],"categories":[[".announcement","Announcement bar"],[".page-heading .eyebrow","Page eyebrow"],[".page-heading h1","Page heading"],[".page-heading p","Page description"]],"about":[[".announcement","Announcement bar"],[".page-heading .eyebrow","Page eyebrow"],[".page-heading h1","Page heading"],[".about-content","About description"]],"contact":[[".announcement","Announcement bar"],[".page-heading .eyebrow","Page eyebrow"],[".page-heading h1","Page heading"],[".page-heading p","Page description"],[".contact-card h2","Contact heading"],[".contact-card p:nth-of-type(1)","Contact description"],[".contact-card a[href^='https://m.me']","Messenger button label"]]};
 let savedPageTexts={};
