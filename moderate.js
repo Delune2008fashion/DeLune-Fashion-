@@ -95,10 +95,37 @@ function renderProductImageGallery(){
  ];
  if(!items.length){host.innerHTML='<p class="status">No product photos selected. Choose photos above to add them.</p>';return}
  host.innerHTML=items.map(item=>'<div class="product-image-item"><img src="'+item.url.replace(/&/g,"&amp;").replace(/"/g,"&quot;")+'" alt="'+item.label.replace(/&/g,"&amp;").replace(/"/g,"&quot;")+'"><small>'+item.label+'</small><button type="button" class="admin-button secondary" data-remove-product-image="'+item.kind+':'+item.index+'">Delete image</button></div>').join("");
- host.querySelectorAll("[data-remove-product-image]").forEach(button=>button.addEventListener("click",()=>{
+ host.querySelectorAll("[data-remove-product-image]").forEach(button=>button.addEventListener("click",async()=>{
   const [kind,indexText]=button.dataset.removeProductImage.split(":"),index=Number(indexText);
-  if(kind==="saved")productImageUrls=productImageUrls.filter((_,i)=>i!==index);
-  else pendingProductFiles=pendingProductFiles.filter((_,i)=>i!==index);
+  if(kind==="pending"){
+    pendingProductFiles=pendingProductFiles.filter((_,i)=>i!==index);
+    renderProductImageGallery();
+    return;
+  }
+  const removedUrl=productImageUrls[index];
+  if(!removedUrl)return;
+  const nextImages=productImageUrls.filter((_,i)=>i!==index);
+  const productId=$("#productId").value;
+  // Persist the new image list before deleting its Storage object. This makes
+  // the gallery Delete action immediate without leaving a broken product URL.
+  if(productId){
+    button.disabled=true;
+    try{
+      const {error}=await db.from("products").update({image_urls:nextImages,updated_at:new Date().toISOString()}).eq("id",productId);
+      if(error)throw error;
+      productImageUrls=nextImages;
+      renderProductImageGallery();
+      const failures=await removeProductStorageImages([removedUrl]);
+      status("#productStatus",failures.length
+        ?"Image removed from this product, but its Storage file could not be deleted: "+failures[0].error
+        :"Image removed from this product. Its unused Supabase Storage file was deleted.");
+    }catch(error){
+      status("#productStatus","Could not remove image: "+(error.message||"Please try again."));
+      button.disabled=false;
+    }
+    return;
+  }
+  productImageUrls=nextImages;
   renderProductImageGallery();
  }));
 }
