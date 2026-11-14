@@ -43,6 +43,8 @@ async function loadCategories(){
   $("#pCategory").innerHTML=`<option value="uncategorized">Uncategorized (moderator only)</option>`+categories.filter(c=>c.is_visible!==false).map(c=>`<option value="${c.slug}">${c.parent_id?"↳ ":""}${c.name}</option>`).join("");
   const parent=$("#cParent");if(parent)parent.innerHTML=`<option value="">Top-level department</option>`+categories.filter(c=>!c.parent_id).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
   const manageDepartment=$("#manageDepartmentFilter");if(manageDepartment){const previous=manageDepartment.value;manageDepartment.innerHTML=`<option value="">All departments</option>`+categories.filter(c=>!c.parent_id).map(c=>`<option value="${c.slug}">${c.name}</option>`).join("");if(categories.some(c=>!c.parent_id&&c.slug===previous))manageDepartment.value=previous;}
+  updateManageSubdepartments();
+  if(allAdminProducts.length)renderAdminProducts();
   $("#adminCategories").innerHTML=categories.map(c=>`<div class="admin-item"><div class="admin-item-main">${c.image_url?`<img class="admin-thumb" src="${c.image_url}" alt="${c.name.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">`:`<div class="admin-thumb" aria-label="No department photo"></div>`}<div class="admin-item-copy"><strong>${c.name}</strong><small>${c.parent_id?"Subdepartment · ":"Department · "}${c.slug}${c.is_visible===false?" · Hidden":""}</small></div></div><div class="admin-actions"><button type="button" class="admin-button secondary" data-edit-category="${c.id}">Edit</button><button type="button" class="admin-button secondary" data-delete-category="${c.id||c.slug}">Delete</button></div></div>`).join("")||"No departments yet.";
 }
 let allAdminProducts=[];
