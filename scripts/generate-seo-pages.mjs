@@ -67,7 +67,11 @@ for (const p of products) {
   await fs.writeFile(path.join(directory, "index.html"), html);
   urls.add(url);
 }
-const fixed = ["/","/categories.html","/about.html","/contact.html","/fashion-platform.html","/froyo-collaboration.html","/collections.html"];
+// Public SEO allowlist only. Never add Merchant/Moderator panels, customer orders,
+// staff dashboards, internal listings, or private API routes to the sitemap.
+const privateSeoPaths = new Set(["/merchant.html", "/moderate.html", "/merchant", "/moderate"]);
+const fixed = ["/","/categories.html","/about.html","/contact.html","/fashion-platform.html","/froyo-collaboration.html","/collections.html"]
+  .filter(route => !privateSeoPaths.has(route));
 const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
   [...fixed.map(p=>site+p), ...urls].map(u=>"  <url><loc>"+esc(u)+"</loc></url>").join("\n") +
   "\n</urlset>\n";
