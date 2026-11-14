@@ -114,6 +114,24 @@ async function removeProductStorageImages(urls){
    const marker="/storage/v1/object/public/product-images/",signedMarker="/storage/v1/object/sign/product-images/";
    const matched=url.includes(marker)?marker:(url.includes(signedMarker)?signedMarker:null);
    if(!matched)continue; // External URLs are not stored in this Supabase bucket.
+   // Check every remaining website reference before deleting the shared Storage object.
+   const [productsResult,categoriesResult,settingsResult]=await Promise.all([
+    db.from("products").select("image_urls"),
+    db.from("categories").select("image_url"),
+    db.from("site_settings").select("key,value")
+   ]);
+   const readError=productsResult.error||categoriesResult.error||settingsResult.error;
+   if(readError){failures.push({url,error:"Could not verify remaining image references: "+readError.message});continue}
+   const productUsed=(productsResult.data||[]).some(row=>(Array.isArray(row.image_urls)?row.image_urls:[]).includes(url));
+   const categoryUsed=(categoriesResult.data||[]).some(row=>row.image_url===url);
+   const bannerSetting=(settingsResult.data||[]).find(row=>row.key==="hero_image_url");
+   let bannerUsed=false;
+   if(bannerSetting){
+    const raw=bannerSetting.value||"";
+    try{const parsed=JSON.parse(raw);bannerUsed=Array.isArray(parsed)?parsed.includes(url):parsed===url}
+    catch{bannerUsed=raw===url}
+   }
+   if(productUsed||categoryUsed||bannerUsed)continue; // Still used elsewhere: remove only this record's reference.
    const index=url.indexOf(matched),path=decodeURIComponent(url.slice(index+matched.length).split("?")[0]);
    if(!path)continue;
    const {error}=await db.storage.from("product-images").remove([path]);
