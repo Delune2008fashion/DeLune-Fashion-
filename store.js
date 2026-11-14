@@ -30,7 +30,7 @@
   async function products(filters={}) {
     if (!client) return [];
     let q=client.from("products").select("*").eq("is_published",true).order("created_at",{ascending:false});
-    if(filters.category) q=q.eq("category",filters.category);
+    if(Array.isArray(filters.categories)&&filters.categories.length) q=q.in("category",filters.categories); else if(filters.category) q=q.eq("category",filters.category);
     if(filters.exclusive) q=q.eq("is_exclusive",true);
     if(filters.availableOnly!==false) q=q.eq("is_available",true);
     const {data,error}=await q;
