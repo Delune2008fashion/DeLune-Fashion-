@@ -107,36 +107,52 @@ $("#pPhotos").addEventListener("change",()=>{
  if(productImageUrls.length+pendingProductFiles.length+selected.length>8){status("#productStatus","A product can have up to 8 photos.");$("#pPhotos").value="";return}
  pendingProductFiles.push(...selected);$("#pPhotos").value="";renderProductImageGallery();
 });
+function productImageStoragePath(value){
+ if(typeof value!=="string"||!value)return "";
+ try{
+  const parsed=new URL(value,location.origin);
+  const marker="/storage/v1/object/";
+  const at=parsed.pathname.indexOf(marker);
+  if(at<0)return "";
+  const rest=parsed.pathname.slice(at+marker.length);
+  const match=rest.match(/^(?:public|sign|authenticated)\/product-images\/(.+)$/);
+  return match?decodeURIComponent(match[1]):"";
+ }catch{return ""}
+}
+function sameStoredImage(a,b){
+ const pa=productImageStoragePath(a),pb=productImageStoragePath(b);
+ return !!pa&&!!pb&&pa===pb;
+}
 async function removeProductStorageImages(urls){
  const failures=[];
  for(const url of [...new Set((urls||[]).filter(Boolean))]){
   try{
-   const marker="/storage/v1/object/public/product-images/",signedMarker="/storage/v1/object/sign/product-images/";
-   const matched=url.includes(marker)?marker:(url.includes(signedMarker)?signedMarker:null);
-   if(!matched)continue; // External URLs are not stored in this Supabase bucket.
-   // Check every remaining website reference before deleting the shared Storage object.
+   const path=productImageStoragePath(url);
+   if(!path)continue; // External URLs and other buckets are never deleted here.
+   // Read all current references before deleting. Any read failure must fail closed.
    const [productsResult,categoriesResult,settingsResult]=await Promise.all([
     db.from("products").select("image_urls"),
     db.from("categories").select("image_url"),
-    db.from("site_settings").select("key,value")
+    db.from("site_settings").select("value")
    ]);
    const readError=productsResult.error||categoriesResult.error||settingsResult.error;
    if(readError){failures.push({url,error:"Could not verify remaining image references: "+readError.message});continue}
-   const productUsed=(productsResult.data||[]).some(row=>(Array.isArray(row.image_urls)?row.image_urls:[]).includes(url));
-   const categoryUsed=(categoriesResult.data||[]).some(row=>row.image_url===url);
-   const bannerSetting=(settingsResult.data||[]).find(row=>row.key==="hero_image_url");
-   let bannerUsed=false;
-   if(bannerSetting){
-    const raw=bannerSetting.value||"";
-    try{const parsed=JSON.parse(raw);bannerUsed=Array.isArray(parsed)?parsed.includes(url):parsed===url}
-    catch{bannerUsed=raw===url}
-   }
-   if(productUsed||categoryUsed||bannerUsed)continue; // Still used elsewhere: remove only this record's reference.
-   const index=url.indexOf(matched),path=decodeURIComponent(url.slice(index+matched.length).split("?")[0]);
-   if(!path)continue;
+   const productUsed=(productsResult.data||[]).some(row=>(Array.isArray(row.image_urls)?row.image_urls:[]).some(value=>sameStoredImage(value,url)));
+   const categoryUsed=(categoriesResult.data||[]).some(row=>sameStoredImage(row.image_url,url));
+   const settingValues=(settingsResult.data||[]).map(row=>row.value||"");
+   const settingsUsed=settingValues.some(raw=>{
+    try{
+     const parsed=JSON.parse(raw);
+     if(typeof parsed==="string")return sameStoredImage(parsed,url);
+     if(Array.isArray(parsed))return parsed.some(value=>sameStoredImage(value,url));
+     if(parsed&&typeof parsed==="object")return Object.values(parsed).some(value=>typeof value==="string"&&sameStoredImage(value,url));
+    }catch{return sameStoredImage(raw,url)}
+    return false;
+   });
+   if(productUsed||categoryUsed||settingsUsed)continue; // Shared image: keep the Storage object.
    const {error}=await db.storage.from("product-images").remove([path]);
    if(error){failures.push({url,error:error.message});console.warn("Supabase image cleanup failed",error)}
-  }catch(error){failures.push({url,error:error.message});console.warn("Supabase image cleanup failed",error)}
+  }catch(error){failures.push({url,error:error.message||String(error)});console.warn("Supabase image cleanup failed",error)}
  }
  return failures;
 }
