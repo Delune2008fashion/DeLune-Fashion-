@@ -57,7 +57,7 @@ $("#textPage").addEventListener("change",renderTextFields);
 $("#savePageTexts").addEventListener("click",async()=>{try{const next={...savedPageTexts};$("#textFields").querySelectorAll("[data-page-text-key]").forEach(el=>next[el.dataset.pageTextKey]=el.value);const headlines=$("#tickerItems").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(headlines.length>15)throw new Error("Use no more than 15 ticker headlines.");if(headlines.some(x=>x.length>120))throw new Error("Each ticker headline must be 120 characters or fewer.");next.ticker_items=headlines;next.ticker_enabled=$("#tickerEnabled").checked;const {error}=await db.from("site_settings").upsert({key:"content_texts",value:JSON.stringify(next),updated_at:new Date().toISOString(),updated_by:currentUser.id},{onConflict:"key"});if(error)throw error;savedPageTexts=next;status("#pageTextStatus","Page texts and "+headlines.length+" ticker headline(s) saved successfully.");}catch(e){status("#pageTextStatus",e.message||"Could not save page texts.")}});
 $("#resetPageTexts").addEventListener("click",async()=>{try{await fetchPageTexts();await renderTextFields();status("#pageTextStatus","Saved text values reloaded.")}catch(e){status("#pageTextStatus",e.message)}});
 
-function reset(){ $("#productForm").reset();$("#productId").value="";$("#productFormTitle").textContent="Add a product";$("#pAvailable").checked=true;$("#pPublished").checked=true;$("#pDeliveryCharge").value="0";$("#pSeoTitle").value="";$("#pSeoDescription").value="";$("#pSeoKeywords").value="";updateSEOPreview(); }
+function reset(){ $("#productForm").reset();$("#productId").value="";$("#productFormTitle").textContent="Add a product";$("#pAvailable").checked=true;$("#pPublished").checked=true;$("#pDeliveryCharge").value="0";$("#pSeoTitle").value="";$("#pSeoDescription").value="";$("#pSeoKeywords").value="";productImageUrls=[];pendingProductFiles=[];renderProductImageGallery();updateSEOPreview(); }
 function makeUploadId(){
   const cryptoApi=window.crypto;
   if(cryptoApi&&typeof cryptoApi.randomUUID==="function")return cryptoApi.randomUUID();
@@ -86,6 +86,33 @@ async function uploadSingleImage(inputSelector){
  const file=$(inputSelector)?.files?.[0];if(!file)return "";
  const [url]=await uploadImages([file]);return url;
 }
+let productImageUrls=[],pendingProductFiles=[];
+function renderProductImageGallery(){
+ const host=$("#productImageGallery");if(!host)return;
+ const items=[
+  ...productImageUrls.map((url,index)=>({url,label:"Saved photo "+(index+1),kind:"saved",index})),
+  ...pendingProductFiles.map((file,index)=>({url:URL.createObjectURL(file),label:file.name,kind:"pending",index}))
+ ];
+ if(!items.length){host.innerHTML='<p class="status">No product photos selected. Choose photos above to add them.</p>';return}
+ host.innerHTML=items.map(item=>'<div class="product-image-item"><img src="'+item.url.replace(/&/g,"&amp;").replace(/"/g,"&quot;")+'" alt="'+item.label.replace(/&/g,"&amp;").replace(/"/g,"&quot;")+'"><small>'+item.label+'</small><button type="button" class="admin-button secondary" data-remove-product-image="'+item.kind+':'+item.index+'">Delete image</button></div>').join("");
+ host.querySelectorAll("[data-remove-product-image]").forEach(button=>button.addEventListener("click",()=>{
+  const [kind,indexText]=button.dataset.removeProductImage.split(":"),index=Number(indexText);
+  if(kind==="saved")productImageUrls=productImageUrls.filter((_,i)=>i!==index);
+  else pendingProductFiles=pendingProductFiles.filter((_,i)=>i!==index);
+  renderProductImageGallery();
+ }));
+}
+$("#pPhotos").addEventListener("change",()=>{
+ const selected=[...($("#pPhotos").files||[])];
+ if(productImageUrls.length+pendingProductFiles.length+selected.length>8){status("#productStatus","A product can have up to 8 photos.");$("#pPhotos").value="";return}
+ pendingProductFiles.push(...selected);$("#pPhotos").value="";renderProductImageGallery();
+});
+async function removeProductStorageImages(urls){
+ for(const url of urls){
+  try{const marker="/storage/v1/object/public/product-images/",index=url.indexOf(marker);if(index<0)continue;const path=decodeURIComponent(url.slice(index+marker.length).split("?")[0]);const {error}=await db.storage.from("product-images").remove([path]);if(error)console.warn("Product image storage cleanup skipped",error)}
+  catch(error){console.warn("Product image storage cleanup skipped",error)}
+ }
+}
 $("#loginForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!configured){status("#loginStatus","Supabase is not configured. Add the project URL and anon key in config.js.");return}
   const identity=$("#loginEmail").value.trim(),password=$("#loginPassword").value;
@@ -104,20 +131,25 @@ $("#productForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!db||!currentUser){status("#productStatus","Sign in first.");return}
   const id=$("#productId").value;
   try{
-    let imageUrls=$("#pImageUrls").value.split("\n").map(x=>x.trim()).filter(Boolean);
-    const chosen=[...$("#pPhotos").files];if(chosen.length)imageUrls=imageUrls.concat(await uploadImages(chosen));
-    if(id&&!imageUrls.length){const old=await db.from("products").select("image_urls").eq("id",id).single();imageUrls=old.data?.image_urls||[]}
-    if(!imageUrls.length)throw new Error("Add at least one product photo or image URL.");
+    const previousImages=[...productImageUrls];
+    let imageUrls=[...productImageUrls];
+    if(pendingProductFiles.length)imageUrls=imageUrls.concat(await uploadImages(pendingProductFiles));
+    if(!imageUrls.length)throw new Error("Add at least one product photo.");
+    if(imageUrls.length>8)throw new Error("A product can have up to 8 photos.");
     const defaults=seoDefaults();const payload={name:$("#pName").value.trim(),seo_title:$("#pSeoTitle").value.trim()||null,seo_description:$("#pSeoDescription").value.trim()||null,seo_keywords:$("#pSeoKeywords").value.trim(),price:Number($("#pPrice").value),delivery_charge:Number($("#pDeliveryCharge").value),category:$("#pCategory").value,sizes:$("#pSizes").value.split(",").map(x=>x.trim()).filter(Boolean),description:$("#pDescription").value.trim(),image_urls:imageUrls,is_available:$("#pAvailable").checked,is_published:$("#pPublished").checked,is_exclusive:$("#pExclusive").checked,updated_at:new Date().toISOString()};
     const res=id?await db.from("products").update(payload).eq("id",id):await db.from("products").insert({...payload,created_by:currentUser.id});
-    if(res.error)throw res.error;status("#productStatus",payload.is_published?"Product published. Its SEO page and sitemap entry refresh on the next SEO deployment (about 10 minutes).":"Product saved as a draft. It will stay out of the storefront and sitemap until published.");reset();await loadProducts();
+    if(res.error)throw res.error;
+    const removedImages=previousImages.filter(url=>!imageUrls.includes(url));
+    await removeProductStorageImages(removedImages);
+    status("#productStatus",payload.is_published?"Product saved. Its SEO page and sitemap entry refresh on the next SEO deployment (about 10 minutes).":"Product saved as a draft. It will stay out of the storefront and sitemap until published.");
+    reset();await loadProducts();
   }catch(err){status("#productStatus",err.message||"Could not save product.")}
 });
 $("#resetProduct").onclick=reset;
 $("#adminProducts").addEventListener("click",async e=>{
   const edit=e.target.closest("[data-edit]"),del=e.target.closest("[data-delete]");
   if(edit){const {data,error}=await db.from("products").select("*").eq("id",edit.dataset.edit).single();if(error){status("#productStatus",error.message);return}
-    $("#productId").value=data.id;$("#pName").value=data.name;$("#pSeoTitle").value=data.seo_title||"";$("#pSeoDescription").value=data.seo_description||"";$("#pSeoKeywords").value=data.seo_keywords||"";$("#pPrice").value=data.price;$("#pDeliveryCharge").value=Number(data.delivery_charge||0);$("#pCategory").value=data.category;$("#pSizes").value=(data.sizes||[]).join(", ");$("#pDescription").value=data.description;$("#pImageUrls").value=(data.image_urls||[]).join("\n");$("#pAvailable").checked=data.is_available;$("#pPublished").checked=data.is_published!==false;$("#pExclusive").checked=data.is_exclusive;$("#productFormTitle").textContent="Edit product";updateSEOPreview();window.scrollTo({top:0,behavior:"smooth"});
+    $("#productId").value=data.id;$("#pName").value=data.name;$("#pSeoTitle").value=data.seo_title||"";$("#pSeoDescription").value=data.seo_description||"";$("#pSeoKeywords").value=data.seo_keywords||"";$("#pPrice").value=data.price;$("#pDeliveryCharge").value=Number(data.delivery_charge||0);$("#pCategory").value=data.category;$("#pSizes").value=(data.sizes||[]).join(", ");$("#pDescription").value=data.description;productImageUrls=[...(data.image_urls||[])];pendingProductFiles=[];renderProductImageGallery();$("#pAvailable").checked=data.is_available;$("#pPublished").checked=data.is_published!==false;$("#pExclusive").checked=data.is_exclusive;$("#productFormTitle").textContent="Edit product";updateSEOPreview();window.scrollTo({top:0,behavior:"smooth"});
   }
   if(del&&confirm("Delete this product?")){const {error}=await db.from("products").delete().eq("id",del.dataset.delete);status("#productStatus",error?.message||"Product deleted.");await loadProducts()}
 });
