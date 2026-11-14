@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="en">
 <head>
-<link rel="icon" type="image/png" href="/logo.png">
-<link rel="shortcut icon" type="image/png" href="/logo.png">
-<link rel="apple-touch-icon" href="/logo.png">
+<link rel="icon" type="image/png" href="/DeLune-Fashion-/logo.png">
+<link rel="shortcut icon" type="image/png" href="/DeLune-Fashion-/logo.png">
+<link rel="apple-touch-icon" href="/DeLune-Fashion-/logo.png">
 
 
 
@@ -20,35 +20,35 @@
 <script>
 (function(){
   var host=location.hostname.toLowerCase();
+  var path=location.pathname;
   var legacyHost=host==="fahad09belal.github.io";
-  var path=location.pathname||"/";
   var prefix="/DeLune-Fashion-";
-  if(legacyHost){
-    if(path.toLowerCase().startsWith(prefix.toLowerCase()))path=path.slice(prefix.length);
-    var legacyBase="https://delune2008fashion.github.io/DeLune-Fashion-";
-    var product=path.match(/^\/products\/(.+?)(?:\/index\.html)?\/?$/i);
-    if(product){location.replace(legacyBase+"/product.html?slug="+encodeURIComponent(product[1])+location.search+location.hash);return;}
-    var routes={"/":"/index.html","/index":"/index.html","/categories":"/categories.html","/about":"/about.html","/contact":"/contact.html","/product":"/product.html","/moderate":"/moderate.html"};
-    var clean=path.replace(/\/$/,"")||"/";
-    var target=routes[clean.toLowerCase()]||clean;
-    location.replace(legacyBase+target+location.search+location.hash);
+  if(path.toLowerCase().startsWith(prefix.toLowerCase()))path=path.slice(prefix.length);
+  if(!path)path="/";
+  var clean=path;
+  while(clean.length>1&&clean.endsWith("/"))clean=clean.slice(0,-1);
+  var routes={"/":"/index.html","/index":"/index.html","/categories":"/categories.html","/about":"/about.html","/contact":"/contact.html","/product":"/product.html","/moderate":"/moderate.html"};
+  var productMatch=clean.match(/^\/products\/(.+?)(?:\/index\.html)?\/?$/i);
+  if(productMatch){
+    var productSlug;
+    try{productSlug=decodeURIComponent(productMatch[1]);}catch(e){productSlug=productMatch[1];}
+    location.replace("https://delune2008fashion.github.io/DeLune-Fashion-/product.html?slug="+encodeURIComponent(productSlug)+location.search+location.hash);
     return;
   }
-  var clean=path.replace(/\/$/,"")||"/";
-  var product=clean.match(/^\/products\/(.+?)(?:\/index\.html)?$/i);
-  if(product){location.replace("/product.html?slug="+encodeURIComponent(product[1])+location.search+location.hash);return;}
-  var routes={"/":"/index.html","/index":"/index.html","/categories":"/categories.html","/about":"/about.html","/contact":"/contact.html","/product":"/product.html","/moderate":"/moderate.html"};
   var target=routes[clean.toLowerCase()];
-  if(target){location.replace(target+location.search+location.hash);return;}
-  if(clean.toLowerCase().endsWith(".html")){location.replace(clean+location.search+location.hash);return;}
+  if(target){
+    location.replace("https://delune2008fashion.github.io/DeLune-Fashion-"+target+location.search+location.hash);
+    return;
+  }
+  if(legacyHost&&clean.toLowerCase().endsWith(".html"))location.replace("https://delune2008fashion.github.io/DeLune-Fashion-"+clean+location.search+location.hash);
 })();
 </script>
 </head>
 <body>
 <main class="card">
 <h1>That page has moved</h1>
-<p>The page you requested could not be found. Return to the DeLune homepage.</p>
-<p><a href="/">Continue to DeLune</a></p>
+<p>DeLune now lives at <strong>delune2008fashion.github.io/DeLune-Fashion-</strong>.</p>
+<p><a href="https://delune2008fashion.github.io/DeLune-Fashion-/">Continue to DeLune</a></p>
 </main>
 </body>
 </html>
