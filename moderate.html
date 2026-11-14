@@ -37,6 +37,13 @@ input::placeholder,textarea::placeholder{color:#E9DDF0!important;opacity:1}
 .seo-preview{background:#fff!important;color:#202124!important;border-color:#dadce0!important}
 .seo-preview summary{color:#202124!important}
 .seo-preview summary span{color:#5f6368!important}
+
+/* Moderator product photo gallery */
+.product-image-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:12px;margin-top:14px}
+.product-image-item{min-width:0;border:1px solid #A98ABF;border-radius:10px;padding:8px;background:#321044}
+.product-image-item img{display:block;width:100%;height:125px;object-fit:contain;background:#24102F;border-radius:6px}
+.product-image-item small{display:block;margin:7px 0;overflow-wrap:anywhere;font-size:11px}
+.product-image-item button{width:100%;margin-top:4px}
 </style><script src="domain-redirect.js"></script></head><body><header class="site-header"><a class="wordmark" href="index.html" aria-label="DeLune home"><img src="logo.png" alt="DeLune" class="delune-logo"></a><a class="underlined-link" href="index.html">Back to store ↗</a></header>
 <main class="admin-wrap">
 <section id="loginPanel" class="admin-card login-box"><p class="eyebrow">RESTRICTED ACCESS</p><h1 style="font:500 34px var(--serif);margin:0 0 25px">Moderator sign in</h1><form id="loginForm"><div class="field"><label>Email / username</label><input id="loginEmail" type="text" autocomplete="username" required></div><div class="field"><label>Password</label><input id="loginPassword" type="password" autocomplete="current-password" required></div><button class="admin-button" type="submit">Sign in</button><p class="status" id="loginStatus">Moderator accounts must be created in Supabase Auth by the project owner.</p></form></section>
@@ -56,8 +63,7 @@ input::placeholder,textarea::placeholder{color:#E9DDF0!important;opacity:1}
 <div class="field"><label>Sizes (comma separated)</label><input id="pSizes" placeholder="S, M, L, XL"></div>
 <div class="field full"><label>Description</label><textarea id="pDescription" required></textarea></div>
 <details class="field full seo-preview" id="seoPreview"><summary>SEO Preview <span>Generated automatically · editable before publishing</span></summary><div class="admin-form seo-fields"><div class="field full"><label for="pSeoTitle">Search title</label><input id="pSeoTitle" maxlength="70" placeholder="Generated from product name"><small>Recommended: around 50–60 characters.</small></div><div class="field full"><label for="pSeoDescription">Search description</label><textarea id="pSeoDescription" maxlength="160" rows="3" placeholder="Generated from product description"></textarea><small>Recommended: around 140–160 characters.</small></div><div class="field full"><label for="pSeoKeywords">Target search phrases</label><textarea id="pSeoKeywords" rows="2" placeholder="Relevant phrases, separated by commas"></textarea><small>Suggestions are selected from the master library. Keep only accurate, relevant phrases.</small><button class="admin-button secondary" type="button" id="suggestSeoKeywords">Suggest relevant phrases</button></div><div class="field full"><div class="seo-google-preview"><small>GOOGLE SEARCH PREVIEW</small><strong id="seoPreviewTitle">Product — DeLune</strong><span id="seoPreviewUrl">https://delune.qd.je/products/product-name/</span><p id="seoPreviewDescription">Your product description will appear here.</p></div></div></div></details>
-<div class="field full"><label>Product photos (choose multiple)</label><input id="pPhotos" type="file" accept="image/*" multiple></div>
-<div class="field full"><label>Or image URLs (one per line)</label><textarea id="pImageUrls" placeholder="https://…"></textarea></div>
+<div class="field full"><label>Product photos</label><label class="file-upload-label" for="pPhotos">Choose product photos</label><input id="pPhotos" type="file" accept="image/*" multiple><small>Select images to add them to the gallery below. You can remove any image individually before saving.</small><div id="productImageGallery" class="product-image-gallery"><p class="status">No product photos selected.</p></div></div>
 <div class="field full checkrow"><label><input id="pAvailable" type="checkbox" checked> In stock / available</label><label><input id="pPublished" type="checkbox" checked> Published on storefront</label><label><input id="pExclusive" type="checkbox"> Exclusive</label></div>
 <div class="field full" style="display:flex;gap:10px;flex-wrap:wrap"><button class="admin-button" type="submit">Save product</button><button class="admin-button secondary" type="button" id="resetProduct">Clear form</button></div>
 </form><p class="status" id="productStatus"></p></div>
