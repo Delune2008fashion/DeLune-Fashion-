@@ -158,7 +158,14 @@ $("#productForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!db||!currentUser){status("#productStatus","Sign in first.");return}
   const id=$("#productId").value;
   try{
-    const previousImages=[...productImageUrls];
+    // Read the persisted image list before applying edits; the gallery state already
+    // excludes images the moderator removed, so it cannot be used as the "before" snapshot.
+    let previousImages=[];
+    if(id){
+      const {data:oldProduct,error:oldProductError}=await db.from("products").select("image_urls").eq("id",id).single();
+      if(oldProductError)throw oldProductError;
+      previousImages=Array.isArray(oldProduct?.image_urls)?oldProduct.image_urls:[];
+    }
     let imageUrls=[...productImageUrls];
     if(pendingProductFiles.length)imageUrls=imageUrls.concat(await uploadImages(pendingProductFiles));
     if(!imageUrls.length)throw new Error("Add at least one product photo.");
